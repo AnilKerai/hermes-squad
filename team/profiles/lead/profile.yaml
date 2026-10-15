@@ -1,0 +1,27 @@
+# Snapshot of profile 'lead' role-shaping settings (generated; do not edit)
+description: "Software tech lead. Plans and decomposes software work in git repos into well-specified cards with acceptance criteria, and judges whether finished code meets the goal. Never implements code, reviews diffs, or takes research/product cards."
+model.default: claude-opus-5-5
+model.provider: anthropic
+agent.reasoning_effort: xhigh
+compression.threshold_tokens: null
+auxiliary.compression.model: null
+security.protected_instruction_files: true
+approvals.deny:
+    - az *
+    - azd *
+    - kubectl *
+    - helm *
+    - terraform *
+    - gh workflow run*
+    - gh secret *
+    - gh variable set*
+platform_toolsets.cli:
+    - clarify
+    - file
+    - kanban
+    - memory
+    - session_search
+    - skills
+    - todo
+skills.write_approval: false
+memory.write_approval: false

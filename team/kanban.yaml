@@ -1,0 +1,9 @@
+# kanban settings on the default profile (the dispatcher's home)
+orchestrator_profile: null
+default_assignee: lead
+max_in_progress: 4
+auto_decompose: false
+review_dispatch: true
+failure_limit: 2
+dispatch_interval_seconds: 60
+auxiliary.kanban_decomposer.model: claude-opus-5-5

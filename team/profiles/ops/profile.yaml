@@ -1,0 +1,76 @@
+# Snapshot of profile 'ops' role-shaping settings (generated; do not edit)
+description: "DevOps/infra engineer. Owns infrastructure-as-code (Bicep/ARM, Azure PaaS: App Service, Container Apps, Functions, Key Vault, etc.), CI/CD pipelines (GitHub Actions), container builds, and Kubernetes manifests. Validates with build/lint/what-if; never deploys. Never takes application code cards."
+model.default: claude-sonnet-5-5
+model.provider: anthropic
+agent.reasoning_effort: high
+compression.threshold_tokens: null
+auxiliary.compression.model: null
+security.protected_instruction_files: false
+approvals.deny:
+    - az * create *
+    - az * delete *
+    - az * update *
+    - az * set *
+    - az * add *
+    - az * remove *
+    - az * deploy *
+    - az * deploy
+    - az * up *
+    - az * up
+    - az * start *
+    - az * stop *
+    - az * restart *
+    - az * scale *
+    - az * swap *
+    - az * purge *
+    - az * import *
+    - az * upload *
+    - az * assign *
+    - az * invoke *
+    - az * apply *
+    - az * restore *
+    - az * rotate *
+    - az * renew *
+    - az * regenerate *
+    - az * reset *
+    - az rest *
+    - azd *
+    - kubectl apply*
+    - kubectl create*
+    - kubectl delete*
+    - kubectl patch*
+    - kubectl replace*
+    - kubectl scale*
+    - kubectl rollout*
+    - kubectl edit*
+    - kubectl set *
+    - kubectl label*
+    - kubectl annotate*
+    - kubectl exec*
+    - kubectl drain*
+    - kubectl cordon*
+    - helm install*
+    - helm upgrade*
+    - helm uninstall*
+    - helm rollback*
+    - terraform apply*
+    - terraform destroy*
+    - gh workflow run*
+    - gh secret *
+    - gh variable set*
+    - git push*
+platform_toolsets.cli:
+    - browser
+    - code_execution
+    - delegation
+    - file
+    - kanban
+    - memory
+    - session_search
+    - skills
+    - terminal
+    - todo
+    - vision
+    - web
+skills.write_approval: false
+memory.write_approval: false

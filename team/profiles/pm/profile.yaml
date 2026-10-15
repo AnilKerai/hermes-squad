@@ -1,0 +1,27 @@
+# Snapshot of profile 'pm' role-shaping settings (generated; do not edit)
+description: "Product/research lead. Turns loose product ideas into framed research questions, fans them out to researchers, and judges whether the findings answer the question well enough to decide. Never does the research itself and never takes software/code cards."
+model.default: claude-opus-5-5
+model.provider: anthropic
+agent.reasoning_effort: xhigh
+compression.threshold_tokens: null
+auxiliary.compression.model: null
+security.protected_instruction_files: true
+approvals.deny:
+    - az *
+    - azd *
+    - kubectl *
+    - helm *
+    - terraform *
+    - gh workflow run*
+    - gh secret *
+    - gh variable set*
+platform_toolsets.cli:
+    - clarify
+    - file
+    - kanban
+    - memory
+    - session_search
+    - skills
+    - todo
+skills.write_approval: false
+memory.write_approval: false
