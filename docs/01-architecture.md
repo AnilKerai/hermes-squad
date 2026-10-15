@@ -46,6 +46,7 @@ flowchart LR
 - **Cross-repo:** the `cross-repo` board, card assigned to `lead`; one child per repo with `project=<repo>`, ordered producer → consumer.
 - **Research:** card on `research` assigned to `pm` → researcher cards in parallel → analyst card (its parents are all the researcher cards) → pm judges.
 - **Between teams:** only through the human. A research recommendation becomes a dev card via the chat-first drafting workflow.
+- **Triage is a holding pen, not a queue.** `kanban.auto_decompose` is off, so rough ideas parked in Triage (assigned to the lead, body shaped *Status / Problem / What we know / Ideas / Open questions*) stay there until the human moves them or clicks Decompose.
 
 ## Guardrails
 

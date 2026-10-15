@@ -15,4 +15,4 @@ Ranked by expected payoff. "Research §6.4 #n" = the matching change in [`resear
 | 9 | **Bring `eng-standards` (Claude Code plugin) into Hermes** via `skills.external_dirs` (research §6.4 #5) | One source of standards across tools | Open |
 | 10 | **Contract-first cross-repo rules** (research §6.4 #7) | Producer/consumer changes need a contract step and version handoff | Open |
 | 11 | **Credential isolation**: per-profile home or scoped service principal for ops; no CLI logins for other roles | Deny lists cover verbs, not credentials | Deferred (proportionate for private dev) |
-| 12 | **Housekeeping**: fix the snapshot-reported skill drift; reviewer description mentions ops; `az bicep upgrade` (0.36 → 0.48); fix ballistic's secret-bearing Bicep output; decide the 9 parked plan-my-party Triage cards | Small fixes found along the way | Open |
+| 12 | **Housekeeping**: fix the snapshot-reported skill drift; reviewer description mentions ops; `az bicep upgrade` (0.36 → 0.48); fix ballistic's secret-bearing Bicep output | Small fixes found along the way | Open |
