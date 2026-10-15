@@ -24,7 +24,7 @@ Each entry: what happened → why → what changed. Newest last. "Squad fix" = a
 12. **Kanban routing config is global; boards isolate work, not teams.** A set `orchestrator_profile` *overrides* the root card's owner, so the dev lead would own research Triage cards. → Cleared; each team's lead owns its cards by assignment.
 13. **Cards agents create default to scratch even when the board has a default folder** (only `dir`/`worktree` cards inherit it). → pm SOUL passes `workspace_kind="dir"` on every card.
 14. **Parallel researchers share one citation ledger by default** and would overwrite each other's. → A ledger per card.
-15b. **Triage works better as a human holding pen than as an auto-decompose queue.** The generic decomposer bypasses the lead's framing. → `kanban.auto_decompose: false`; rough ideas wait in Triage until promoted; executable work goes straight to the lead.
+14b. **Triage works better as a human holding pen than as an auto-decompose queue.** The generic decomposer bypasses the lead's framing. → `kanban.auto_decompose: false`; rough ideas wait in Triage until promoted; executable work goes straight to the lead.
 
 ## Observability (11 Oct)
 
