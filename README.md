@@ -4,6 +4,10 @@ A record of how I built two AI agent teams on [Hermes Agent](https://hermes-agen
 
 Started 11 Oct 2026. Hermes v0.21.x, Anthropic Claude 5.5 models.
 
+![How a card flows through the two Hermes squads](docs/assets/squad-architecture.svg)
+
+*Regenerate with `python3 scripts/render_architecture.py`.*
+
 ## Read in this order
 
 | Doc | What it answers |

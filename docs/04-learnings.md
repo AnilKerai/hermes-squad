@@ -51,3 +51,9 @@ Each entry: what happened → why → what changed. Newest last. "Squad fix" = a
 26. **Cloning copied stale memory into three roles**, injecting wrong facts into every run. → Cleared (backups kept). Clones copy memory: audit it after creating a profile.
 27. **My review missed the biggest gap, which the research team had already found**: `AGENTS.md` pointer files mean workers never get repo standards. Lesson: read the existing research before reviewing.
 28. **Agent-made skills drift between per-profile copies** (`dotnet-prerelease-package-testing`: dev profiles hold the older version). The snapshot script now reports drift.
+
+## Loops, digest and briefings (16 Oct)
+
+29. **Kanban links run both ways, so "created without me" needs a graph walk.** A lead's own card is the *child* of the implementation card it waits on, so "has a human parent" misses most decomposition. → The digest counts a card as decomposition only when it reaches a human-created card through lead/pm-created cards; engineer follow-ups, and anything hung off them, count as created without you. Last 24 h: 6 of those vs 10 decomposition cards.
+30. **Measure before writing a goal card.** A mutation-score goal for katas looked ideal, but Stryker.NET 5.0 doesn't support Microsoft Testing Platform (stryker-net#3094) and, with code and tests in one assembly, it mutates `Katas.Testing` instead. → Coverage of production files was used instead (baseline: ABCGame 81% lines, FizzBuzz `Program.cs` 31%, MagicSquare 74% branches; the rest 100%).
+31. **Cron `deliver: origin` from the desktop app resolves to `local`**: there is no live delivery channel without a messaging platform. → WhatsApp for the digest and briefings.

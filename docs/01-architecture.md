@@ -2,6 +2,8 @@
 
 *As of 15 Oct 2026. The authoritative settings are in [`team/`](../team).*
 
+![Architecture](assets/squad-architecture.svg)
+
 ## Building blocks
 
 Hermes has no "team" object. A team is **profiles** (one per role) plus the **Kanban boards** they work from, with one dispatcher running everything.
@@ -68,3 +70,8 @@ flowchart LR
 | `kanban_release_worktrees.py` | cron, every 5 min, no model calls | Removes finished cards' worktrees and keeps the branches, so the human works on plain branches |
 | `sync_langfuse_env.py` | `~/.hermes/scripts/` | Copies the Langfuse keys to every profile and sets `HERMES_LANGFUSE_ENV=hermes-<profile>` |
 | Langfuse plugin | every profile | Per-role traces, tokens and cost, kept apart from app traces by environment |
+| `squad_status.py` | `~/.hermes/scripts/` | Read-only snapshot of every board plus Langfuse cost per role; shared by the digest and the dashboard |
+| `squad_digest.py` | cron, daily 07:30, no model calls | Morning digest: what finished, what waits on the human, cards agents created without the human, spend per role |
+| `squad_dashboard.py` | cron, every 5 min, no model calls | Writes `~/.hermes/dashboards/squad.html`, shown in the desktop chat as a live widget whose buttons send prompts back |
+| `kanban-goal-card.sh` | `~/.hermes/scripts/` | Creates a goal-mode card (`--goal`, turn budget, idempotency key) |
+| AI briefing | cron, daily 07:45 (Sonnet) + Saturday 09:00 (Opus), skill `ai-trends-briefing` | Agent-engineering trends brief; archive and glossary in `~/git/research/briefings/` |

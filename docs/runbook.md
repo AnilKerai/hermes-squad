@@ -12,6 +12,23 @@
    Cross-repo: `--board cross-repo`, assignee `lead`, not `--triage`.
 4. Watch: desktop Kanban page (pick the board in the header), or `hermes kanban --board <repo> watch`.
 
+## Goal-mode cards (keep going until X is true)
+For open-ended work with a machine-checkable end state (coverage or warning targets, a flaky suite stable over N runs, every instruction file accurate). The worker loops in one session; after each turn a judge reads **only the title and body** and decides whether it's done. Out of budget → the card blocks for you. The review lane still runs after.
+```bash
+~/.hermes/scripts/kanban-goal-card.sh <board> "<title>" card.md [max-turns=20] [assignee=engineer]
+# = hermes kanban --board <b> create "<title>" --body-file card.md --assignee engineer --goal --goal-max-turns 20 --idempotency-key goal-<hash>
+hermes kanban --board <b> log <id> | grep "goal loop"    # one "turn N/M verdict=…" line per judged turn
+```
+- Write the body as the judge's checklist: Acceptance criteria with a Verify command each, and an exceptions clause on absolute ones.
+- Assign the engineer directly for a single-repo loop; the lead can also create goal-mode children itself (lead SOUL step 5a).
+- Skip it for ordinary feature cards: the judge adds a model call per turn, and the reviewer is already the check.
+- The judge model is `auxiliary.goal_judge` (`auto` = the worker's own model).
+
+## Morning digest and dashboard
+- **Digest** (cron `Morning squad digest`, 07:30 daily, no model calls): `python3 ~/.hermes/scripts/squad_digest.py [hours]` shows what finished, what is waiting on you, cards agents created without you, what's in flight, and spend per role.
+- **Dashboard** (cron `Squad dashboard refresh`, every 5 min, silent): writes `~/.hermes/dashboards/squad.html`. In the desktop chat, ask for "the squad dashboard" and it is shown with `::preview`; its buttons send prompts back to the chat.
+- Both read the board DBs read-only and Langfuse cost via `squad_status.py`.
+
 ## Inspect
 | Question | Command |
 |---|---|
