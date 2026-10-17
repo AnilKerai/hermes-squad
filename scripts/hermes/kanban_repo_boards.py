@@ -1,7 +1,7 @@
 """Create one project-scoped kanban board per repo in ~/git, plus a cross-repo board.
 
-Run with the Hermes venv python and HERMES_HOME=~/.hermes (default profile).
-Idempotent: existing projects/boards are reused.
+Run via kanban-repo-boards.sh (Hermes's own Python, HERMES_HOME = the Hermes root).
+Repos root: $SQUAD_GIT_ROOT, default ~/git. Idempotent: existing projects/boards are reused.
 """
 import os
 import sqlite3
@@ -12,7 +12,8 @@ from hermes_cli import projects_db as pdb
 from hermes_cli import kanban_db as kb
 from hermes_cli import kanban_db_boards as kbb
 
-GIT = Path.home() / "git"
+HERMES = Path(os.environ.get("HERMES_HOME") or Path.home() / ".hermes")
+GIT = Path(os.environ.get("SQUAD_GIT_ROOT") or Path.home() / "git").expanduser()
 TEAM = ["lead", "engineer", "reviewer", "ops"]
 
 repos = sorted(p for p in GIT.iterdir() if (p / ".git").exists())
@@ -52,7 +53,10 @@ print("  cross-repo board created (unscoped)")
 # resolve to the same repos. Projects are per-profile state in $HERMES_HOME/projects.db.
 src = sqlite3.connect(str(pdb.projects_db_path()))
 for p in TEAM:
-    dst_path = Path.home() / ".hermes" / "profiles" / p / "projects.db"
+    if not (HERMES / "profiles" / p).is_dir():
+        print(f"  projects skipped -> {p} (profile not installed)")
+        continue
+    dst_path = HERMES / "profiles" / p / "projects.db"
     dst = sqlite3.connect(str(dst_path))
     src.backup(dst)
     dst.close()

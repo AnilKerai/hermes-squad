@@ -9,14 +9,14 @@ The branch is always kept, so you can `git checkout` it in your IDE.
 Hermes' built-in cleanup only removes worktrees whose commits are pushed; our engineers
 never push, so this fills the gap. Silent unless it released something (cron no-agent job).
 """
+import os
 import sqlite3
 import subprocess
 from pathlib import Path
 
-HOME = Path.home()
-GIT_ROOT = HOME / "git"
-KANBAN_DBS = [HOME / ".hermes" / "kanban.db",
-              *sorted((HOME / ".hermes" / "kanban" / "boards").glob("*/kanban.db"))]
+HERMES = Path(os.environ.get("HERMES_HOME") or Path.home() / ".hermes")
+GIT_ROOT = Path(os.environ.get("SQUAD_GIT_ROOT") or Path.home() / "git").expanduser()
+KANBAN_DBS = [HERMES / "kanban.db", *sorted((HERMES / "kanban" / "boards").glob("*/kanban.db"))]
 TERMINAL = {"done", "archived"}
 
 

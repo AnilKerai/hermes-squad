@@ -919,7 +919,7 @@ I re-fetched the sources behind the claims the recommendation and gap analysis r
 
 ## Sources
 
-[1] file:///Users/anilkerai/git/research/coding-agent-squad-build-options.md — Earlier brief: coding-agent-squad-build-options.md (10 Oct 2026)
+[1] ~/git/research/coding-agent-squad-build-options.md — Earlier brief: coding-agent-squad-build-options.md (10 Oct 2026)
 [2] https://code.claude.com/docs/en/memory — Claude Code docs: Memory (CLAUDE.md, rules, AGENTS.md)
     > "Longer files consume more context and reduce adherence."
     > "Claude treats them as context, not enforced configuration."
@@ -1018,9 +1018,9 @@ I re-fetched the sources behind the claims the recommendation and gap analysis r
 [76] https://arxiv.org/abs/2505.16067 — Xiong et al., How Memory Management Impacts LLM Agents: Experience-Following Behavior, arXiv 2505.16067 (v2 10 Oct 2025; ACL 2026)
 [77] https://hermes-agent.nousresearch.com/docs/user-guide/features/curator — Hermes docs: Curator (read 12 Oct 2026)
     > "default **7 days**"
-[78] file:///Users/anilkerai/.hermes/hermes-agent/agent/curator.py — Hermes source (installed v0.21.6+666): agent/curator.py, DEFAULT_STALE_AFTER_DAYS, DEFAULT_ARCHIVE_AFTER_DAYS = 14, 30 (read 12 Oct 2026)
+[78] ~/.hermes/hermes-agent/agent/curator.py — Hermes source (installed v0.21.6+666): agent/curator.py, DEFAULT_STALE_AFTER_DAYS, DEFAULT_ARCHIVE_AFTER_DAYS = 14, 30 (read 12 Oct 2026)
     > "DEFAULT_STALE_AFTER_DAYS, DEFAULT_ARCHIVE_AFTER_DAYS = 14, 30"
-[79] file:///Users/anilkerai/.hermes/hermes-agent/website/docs/user-guide/features/curator.md — Hermes docs as shipped with installed v0.21.6+666: Curator (read 12 Oct 2026)
+[79] ~/.hermes/hermes-agent/website/docs/user-guide/features/curator.md — Hermes docs as shipped with installed v0.21.6+666: Curator (read 12 Oct 2026)
     > "By default the curator manages only agent-created skills."
 [80] https://code.claude.com/docs/en/goal — Claude Code docs: Keep Claude working toward a goal (read 12 Oct 2026)
 [81] https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool — Claude API docs: Memory tool, memory_20250818 (read 12 Oct 2026)

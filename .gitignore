@@ -2,3 +2,12 @@
 .idea/
 __pycache__/
 *.pyc
+
+# Credentials and per-machine state never belong here (the profile installer strips them too)
+.env
+.env.*
+auth.json
+memories/
+sessions/
+state.db*
+*.bak*

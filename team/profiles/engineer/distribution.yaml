@@ -1,0 +1,24 @@
+name: engineer
+version: 1.0.0
+description: "Software engineer. Implements application features, fixes and refactors (backend .NET/ASP.NET Core, frontend Blazor/MAUI/React+TS) in a git worktree, writes and runs tests, then requests review. Never takes infrastructure, IaC (Bicep/ARM), CI/CD or deployment cards, nor research/product cards."
+hermes_requires: ">=0.22.0"
+author: "Anil Kerai"
+license: MIT
+env_requires:
+  - name: ANTHROPIC_API_KEY
+    description: "Anthropic API key. Not needed if you sign in once on the default profile (`hermes model`); profiles fall back to its credentials."
+    required: false
+  - name: HERMES_LANGFUSE_PUBLIC_KEY
+    description: "Langfuse public key (optional tracing; needs the langfuse plugin)"
+    required: false
+  - name: HERMES_LANGFUSE_SECRET_KEY
+    description: "Langfuse secret key (optional tracing)"
+    required: false
+  - name: HERMES_LANGFUSE_BASE_URL
+    description: "Langfuse host (optional tracing)"
+    required: false
+    default: "https://cloud.langfuse.com"
+  - name: HERMES_LANGFUSE_ENV
+    description: "Langfuse environment, one per role so cost groups by role"
+    required: false
+    default: "hermes-engineer"

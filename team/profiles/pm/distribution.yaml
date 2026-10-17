@@ -1,0 +1,24 @@
+name: pm
+version: 1.0.0
+description: "Product/research lead. Turns loose product ideas into framed research questions, fans them out to researchers, and judges whether the findings answer the question well enough to decide. Never does the research itself and never takes software/code cards."
+hermes_requires: ">=0.22.0"
+author: "Anil Kerai"
+license: MIT
+env_requires:
+  - name: ANTHROPIC_API_KEY
+    description: "Anthropic API key. Not needed if you sign in once on the default profile (`hermes model`); profiles fall back to its credentials."
+    required: false
+  - name: HERMES_LANGFUSE_PUBLIC_KEY
+    description: "Langfuse public key (optional tracing; needs the langfuse plugin)"
+    required: false
+  - name: HERMES_LANGFUSE_SECRET_KEY
+    description: "Langfuse secret key (optional tracing)"
+    required: false
+  - name: HERMES_LANGFUSE_BASE_URL
+    description: "Langfuse host (optional tracing)"
+    required: false
+    default: "https://cloud.langfuse.com"
+  - name: HERMES_LANGFUSE_ENV
+    description: "Langfuse environment, one per role so cost groups by role"
+    required: false
+    default: "hermes-pm"

@@ -7,7 +7,7 @@
    ```bash
    hermes kanban --board <repo> create "<title>" --body-file card.md --assignee lead --idempotency-key <key>
    hermes kanban --board research create "<title>" --body-file card.md --assignee pm \
-     --workspace dir:/Users/anilkerai/git/research
+     --workspace dir:~/git/research
    ```
    Cross-repo: `--board cross-repo`, assignee `lead`, not `--triage`.
 4. Watch: desktop Kanban page (pick the board in the header), or `hermes kanban --board <repo> watch`.
@@ -60,8 +60,21 @@ For a capability block (missing access, protected file), fix the capability or d
 ## Change the team
 | Change | Steps |
 |---|---|
-| Edit a role | Back up (`cp SOUL.md backups/soul/SOUL.md.$(date +%Y%m%d-%H%M%S)`), patch in place, run `python3 scripts/snapshot_team.py` here, commit. Applies from that role's next card; no restart. |
+| Edit a role | Back up (`cp SOUL.md backups/soul/SOUL.md.$(date +%Y%m%d-%H%M%S)`), patch in place, run `python3 scripts/snapshot_team.py` here (it must end `scan: clean`; the repo is public), commit. Applies from that role's next card; no restart. Write paths as `~/...`, never `/Users/<me>/...`, so the role works on another machine. |
 | Add a repo | `~/.hermes/scripts/kanban-repo-boards.sh` |
 | Add a profile | `hermes profile create <p> --clone-from <closest> --description "..."`; set model and thinking level; **clear inherited memory**; write SOUL; set toolsets and `approvals.deny`; `python3 ~/.hermes/scripts/sync_langfuse_env.py`; add to `TEAM` in `kanban_repo_boards.py` and re-run it; snapshot and commit. |
 | Change `kanban.*` | `hermes config set kanban.<k> <v>`, then `hermes gateway restart` (running workers survive); confirm in `~/.hermes/logs/gateway.log`. |
 | Rotate Langfuse keys | Edit `~/.hermes/.env` only, then `python3 ~/.hermes/scripts/sync_langfuse_env.py`. |
+
+## Release a new version of the roles
+Bump `VERSION`, run `python3 scripts/snapshot_team.py`, commit, then `git tag v$(cat VERSION) && git push --follow-tags`. Machines that installed the squad pick it up with `git pull && ./install.sh`.
+
+## Move to another machine (e.g. a private server)
+Two routes, depending on whether the agents' memories and history should come along:
+
+| Route | Brings | Steps |
+|---|---|---|
+| **Fresh squad from this repo** | Roles, skills, kanban settings, boards, worktree cron. Not memories, sessions, crons with personal delivery targets, or keys | Install Hermes, `hermes model` (sign in), clone this repo and `./install.sh --kanban`, clone the repos into `~/git`, then `hermes gateway install` |
+| **Exact copy** | Everything under `~/.hermes`: all profiles with memories and sessions, crons, kanban DBs, `.env` and `auth.json` | `hermes backup -o hermes-migrate.zip` here; on the server `hermes gateway stop`, `hermes import hermes-migrate.zip`, `hermes doctor`. Then fix what doesn't carry over: boards and projects point at `/Users/...` paths (re-run `scripts/hermes/kanban-repo-boards.sh` after cloning the repos), `hermes gateway install` for systemd, `gh auth login`. The zip holds credentials in plain text: copy it with `scp` and delete it afterwards |
+
+Either way, stop the Mac's gateway or run `hermes pause` once the server is live, otherwise crons and the dispatcher run twice.
