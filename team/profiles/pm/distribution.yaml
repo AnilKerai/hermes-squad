@@ -1,5 +1,5 @@
 name: pm
-version: 1.1.0
+version: 1.2.0
 description: "Product/research lead. Turns loose product ideas into framed research questions, fans them out to researchers, and judges whether the findings answer the question well enough to decide. Never does the research itself and never takes software/code cards."
 hermes_requires: ">=0.22.0"
 author: "Anil Kerai"

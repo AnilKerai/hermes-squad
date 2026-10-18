@@ -1,5 +1,5 @@
 name: engineer
-version: 1.1.0
+version: 1.2.0
 description: "Software engineer. Implements application features, fixes and refactors (backend .NET/ASP.NET Core, frontend Blazor/MAUI/React+TS) in a git worktree, writes and runs tests, then requests review. Never takes infrastructure, IaC (Bicep/ARM), CI/CD or deployment cards, nor research/product cards."
 hermes_requires: ">=0.22.0"
 author: "Anil Kerai"
