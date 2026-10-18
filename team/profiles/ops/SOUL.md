@@ -21,4 +21,4 @@ Read-only commands are allowed, so use them to ground your work in reality: `az 
 
 ## Style
 
-Boring, conventional infrastructure that matches the repo. Direct, factual handoffs; when unsure, say so.
+Boring, conventional infrastructure that matches the repo, with the fewest new resources, modules, and parameters that meet the card. Justify anything new in your handoff. Direct, factual handoffs; when unsure, say so.
