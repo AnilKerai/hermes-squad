@@ -20,7 +20,7 @@ For open-ended work with a machine-checkable end state (coverage or warning targ
 hermes kanban --board <b> log <id> | grep "goal loop"    # one "turn N/M verdict=…" line per judged turn
 ```
 - Write the body as the judge's checklist: Acceptance criteria with a Verify command each, and an exceptions clause on absolute ones.
-- Assign the engineer directly for a single-repo loop; the lead can also create goal-mode children itself (lead SOUL step 5a).
+- Assign the engineer directly for a single-repo loop; the lead can also create goal-mode children itself (lead SOUL step 6a).
 - Skip it for ordinary feature cards: the judge adds a model call per turn, and the reviewer is already the check.
 - The judge model is `auxiliary.goal_judge` (`auto` = the worker's own model).
 
