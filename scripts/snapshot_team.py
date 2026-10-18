@@ -44,6 +44,7 @@ KANBAN_KEYS = [
     ("kanban.dispatch_interval_seconds", "dispatcher tick"),
     ("auxiliary.kanban_decomposer.provider", ""),
     ("auxiliary.kanban_decomposer.model", ""),
+    ("gateway.multiplex_profiles", "one gateway process serves the default profile and every role"),
 ]
 
 # Patterns that must never reach the (public) repo.
@@ -116,7 +117,7 @@ def manifest(profile: str, version: str, desc: str) -> str:
 
 
 def kanban_settings() -> str:
-    lines = ["# Kanban settings for the dispatcher's home (the default profile).",
+    lines = ["# Dispatcher and gateway settings for the default profile (it hosts the kanban dispatcher).",
              "# `./install.sh --kanban` applies them with `hermes config set`. Generated; do not edit."]
     for key, why in KANBAN_KEYS:
         value = run("hermes", "config", "get", key).strip().splitlines()

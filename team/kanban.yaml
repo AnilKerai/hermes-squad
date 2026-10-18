@@ -1,4 +1,4 @@
-# Kanban settings for the dispatcher's home (the default profile).
+# Dispatcher and gateway settings for the default profile (it hosts the kanban dispatcher).
 # `./install.sh --kanban` applies them with `hermes config set`. Generated; do not edit.
 kanban.orchestrator_profile: ""  # empty: each team's lead owns its own cards
 kanban.default_assignee: "lead"  # unassigned cards go to the dev lead
@@ -9,3 +9,4 @@ kanban.failure_limit: "2"  # worker failures before a card blocks
 kanban.dispatch_interval_seconds: "60"  # dispatcher tick
 auxiliary.kanban_decomposer.provider: "anthropic"
 auxiliary.kanban_decomposer.model: "claude-opus-5-5"
+gateway.multiplex_profiles: "true"  # one gateway process serves the default profile and every role

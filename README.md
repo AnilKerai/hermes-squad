@@ -4,6 +4,8 @@ A record of how I built two AI agent teams on [Hermes Agent](https://hermes-agen
 
 Started 11 Oct 2026. Hermes v0.22.x, Anthropic Claude 5.5 models.
 
+If you're an agent setting this up, follow [`AGENTS.md`](AGENTS.md). It has the install steps, which steps need a human, and how cards are routed to roles.
+
 ![How a card flows through the two Hermes squads](docs/assets/squad-architecture.svg)
 
 *Regenerate with `python3 scripts/render_architecture.py`.*
@@ -45,6 +47,7 @@ hermes gateway install           # run the dispatcher as a background service (s
 | `--langfuse` | Installs and enables the official `langfuse` plugin per role. Fill in each profile's `.env` (the installer writes a `.env.EXAMPLE`); `HERMES_LANGFUSE_ENV=hermes-<role>` keeps cost grouped by role |
 | `--no-alias` | Skips the `lead`, `engineer`, … shell wrappers |
 | `--force-config` | On update, also resets each role's `config.yaml` to this repo's version |
+| `--check` | Changes nothing and spends no tokens. Checks the wiring: every role is installed with the kanban toolset and the skills its cards pin, the dispatcher settings, a board for every repo, the cron, sign-in and the gateway. It also runs at the end of every install |
 
 `./install.sh` never overwrites a profile you built by hand. If a profile with the same name exists and wasn't installed from a distribution, it is skipped. To update later, run `git pull && ./install.sh`. That replaces each role's `SOUL.md`, skills and manifest and keeps your `config.yaml` (model tweaks survive). It never touches memories, sessions, `.env` or auth. Updating starts with `git pull` because `hermes profile install` needs `distribution.yaml` at a repo's root: each role is installed from its folder in your clone, and `hermes profile update` re-reads that folder.
 

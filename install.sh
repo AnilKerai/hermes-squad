@@ -10,20 +10,23 @@
 #   ./install.sh --langfuse       also install and enable the official langfuse plugin per role
 #   ./install.sh --no-alias       don't create `lead`, `engineer`, ... shell wrappers
 #   ./install.sh --force-config   on update, also reset each role's config.yaml to this repo's
+#   ./install.sh --check          only check the wiring (roles, skills, settings, boards, gateway);
+#                                 changes nothing. Also runs at the end of every install.
 #
 # Update later with: git pull && ./install.sh
 # A profile that already exists but was not installed from a distribution is never touched.
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 all=(lead engineer ops reviewer pm researcher analyst)
-alias_flag=(--alias); update_flags=(-y); kanban=0; langfuse=0; roles=()
+alias_flag=(--alias); update_flags=(-y); kanban=0; langfuse=0; check=0; roles=()
 for a in "$@"; do
   case "$a" in
     --kanban) kanban=1 ;;
+    --check) check=1 ;;
     --langfuse) langfuse=1 ;;
     --no-alias) alias_flag=() ;;
     --force-config) update_flags+=(--force-config) ;;
-    -h|--help) sed -n '2,15p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,17p' "$0"; exit 0 ;;
     -*) echo "unknown option: $a" >&2; exit 2 ;;
     *) roles+=("$a") ;;
   esac
@@ -31,6 +34,7 @@ done
 [ ${#roles[@]} -eq 0 ] && roles=("${all[@]}")
 command -v hermes >/dev/null || { echo "hermes not found: install Hermes Agent first" >&2; exit 1; }
 root="${HERMES_HOME:-$HOME/.hermes}"
+if [ "$check" = 1 ]; then exec bash "$here/scripts/check_squad.sh" "${roles[@]}"; fi
 
 for p in "${roles[@]}"; do
   src="$here/team/profiles/$p"
@@ -88,5 +92,6 @@ if [ "$kanban" = 1 ]; then
 fi
 
 echo
-echo "Done. Next: sign in once on the default profile (hermes model; or hermes auth add anthropic --no-browser on a server),"
-echo "then check a role with: hermes -p lead config get model.default"
+echo "== checking the wiring"
+bash "$here/scripts/check_squad.sh" "${roles[@]}" || { echo "Fix the FAIL lines above, then: ./install.sh --check" >&2; exit 1; }
+echo "Clear any WARN lines (sign-in, gateway, repos), then re-check with: ./install.sh --check"
