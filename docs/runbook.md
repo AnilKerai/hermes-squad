@@ -28,6 +28,7 @@ hermes kanban --board <b> log <id> | grep "goal loop"    # one "turn N/M verdict
 - **Digest** (cron `Morning squad digest`, 07:30 daily, no model calls): `python3 ~/.hermes/scripts/squad_digest.py [hours]` shows what finished, what is waiting on you, cards agents created without you, what's in flight, and spend per role.
 - **Dashboard** (cron `Squad dashboard refresh`, every 5 min, silent): writes `~/.hermes/dashboards/squad.html`. In the desktop chat, ask for "the squad dashboard" and it is shown with `::preview`; its buttons send prompts back to the chat.
 - Both read the board DBs read-only and Langfuse cost via `squad_status.py`.
+- On a new machine, `./install.sh --kanban --extras` creates both crons with `deliver: local`. Point them at a messaging channel with `hermes cron edit` once one is paired.
 
 ## Inspect
 | Question | Command |

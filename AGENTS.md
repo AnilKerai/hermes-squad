@@ -4,12 +4,12 @@ This repo defines two Hermes Agent teams and installs them. `team/profiles/<role
 
 ## Set the squad up on a machine
 
-Run these in order. Steps marked **human** need a person (a browser sign-in, sudo, or access to private repos); stop and ask for them rather than working around them.
+Run these in order, from the human's terminal or a top-level Hermes session. A delegated subagent can't complete them, because Hermes refuses kanban board and card changes from `delegate_task` children. Don't work around that guard. Steps marked **human** need a person (a browser sign-in, sudo, or access to private repos); stop and ask rather than working around them.
 
 1. Hermes Agent v0.22 or later is installed (`hermes --version`). If not: `curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash`.
 2. **human**: sign in to Anthropic once on the default profile: `hermes model`, or `hermes auth add anthropic --no-browser` on a headless server. The roles fall back to the default profile's credentials. Never ask for, type or store keys yourself.
-3. **human** (or with their go-ahead): clone the repos the dev squad will work on into `~/git/<repo>` (folder name = board name). Override the root with `SQUAD_GIT_ROOT`.
-4. Clone this repo and install: `git clone https://github.com/AnilKerai/hermes-squad ~/git/hermes-squad && cd ~/git/hermes-squad && ./install.sh --kanban`. The run ends with a wiring check. Fix every `FAIL` before going on.
+3. **human** (or with their go-ahead): clone the repos the dev squad will work on into `~/git/<repo>` (folder name = board name). Override that root with `SQUAD_GIT_ROOT`. Research output always goes to `~/git/research`, because the research roles' SOULs name that path.
+4. Clone this repo and install: `git clone https://github.com/AnilKerai/hermes-squad ~/git/hermes-squad && cd ~/git/hermes-squad && ./install.sh --kanban`. Add `--extras` for the no-model morning digest and dashboard crons. A clone under `~/git` gets its own board like any repo, which is harmless. The run ends with a wiring check: fix every `FAIL` before going on.
 5. **human** (it may need sudo on Linux): `hermes gateway install`. The gateway hosts the kanban dispatcher; without it no card is ever picked up.
 6. `./install.sh --check` must end with `0 fail`. `WARN` lines name what is still missing. It spends no tokens and changes nothing.
 
@@ -48,4 +48,4 @@ The card body is the only brief a worker gets: state the goal, constraints, and 
 
 - **This repo is public.** Never commit keys, tokens, `.env`, `auth.json`, memories, sessions, emails, phone numbers or absolute home paths. The snapshot script refuses on these. Write paths as `~/…`.
 - Keep `README.md`, this file and `docs/runbook.md` accurate when you change how the squad is installed or routed. Add dated lessons to `docs/04-learnings.md` and gaps to `docs/06-roadmap.md`.
-- Test installer changes against a throwaway Hermes home, never the live one: `HERMES_HOME=$(mktemp -d) SQUAD_GIT_ROOT=<scratch dir with a test repo> ./install.sh --kanban --no-alias`. Don't start a gateway in that home.
+- Test installer changes against a throwaway Hermes home, never the live one: `HERMES_HOME=$(mktemp -d /tmp/hsq-test.XXXXXX) SQUAD_GIT_ROOT=<scratch dir with a test repo> ./install.sh --kanban --no-alias`. Keep the home outside `~/.hermes`: Hermes treats any `HERMES_HOME` inside `~/.hermes` as the live home, so `install.sh` refuses one. `hermes kanban --board <b> dispatch --dry-run` then shows which role each probe card would go to, without spending tokens. Don't start a gateway in that home.

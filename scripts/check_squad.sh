@@ -8,8 +8,26 @@
 # Usage: scripts/check_squad.sh [role ...]     exit 1 if any FAIL
 set -uo pipefail
 roles=("$@"); [ ${#roles[@]} -eq 0 ] && roles=(lead engineer ops reviewer pm researcher analyst)
-root="${HERMES_HOME:-$HOME/.hermes}"
-case "$root" in */profiles/*) root="${root%/profiles/*}" ;; esac
+# Resolve the Hermes root exactly as Hermes does (hermes_constants.get_default_hermes_root):
+# HERMES_HOME inside ~/.hermes means ~/.hermes itself; <root>/profiles/<name> means <root>.
+# A HERMES_HOME elsewhere inside ~/.hermes is refused: Hermes would silently use the live home.
+resolve_root() {
+  local native="$HOME/.hermes" h hp np rel
+  h="${HERMES_HOME:-$native}"
+  hp="$(cd "$h" 2>/dev/null && pwd -P || echo "$h")"
+  np="$(cd "$native" 2>/dev/null && pwd -P || echo "$native")"
+  case "$hp/" in
+    "$np/"*)
+      rel="${hp#"$np"}"
+      case "$rel" in
+        ""|/profiles/*) echo "$np" ;;
+        *) echo "refusing: HERMES_HOME=$h is inside $native, and Hermes treats any path there as $native itself (the live home). Use a directory outside $native." >&2; return 1 ;;
+      esac ;;
+    *) if [ "$(basename "$(dirname "$hp")")" = profiles ]; then dirname "$(dirname "$hp")"; else echo "$hp"; fi ;;
+  esac
+}
+root="$(resolve_root)" || exit 2
+echo "Hermes root: $root"
 git_root="${SQUAD_GIT_ROOT:-$HOME/git}"
 fails=0; warns=0
 pass() { echo "  PASS  $*"; }
@@ -56,14 +74,20 @@ for repo in "$git_root"/*/; do
   has "$boards" "^$slug\$" || warn "repo $slug has no board, so it can't take cards yet (scripts/hermes/kanban-repo-boards.sh)"
 done
 [ "$repos" -gt 0 ] && pass "$repos repo(s) under $git_root checked" || warn "no git repos under $git_root yet: clone them, then run scripts/hermes/kanban-repo-boards.sh"
-[ -d "$HOME/git/research" ] && pass "research output dir ~/git/research" || warn "~/git/research missing"
+# Fixed path: the research roles' SOULs name ~/git/research, whatever SQUAD_GIT_ROOT is.
+[ -d "$HOME/git/research" ] && pass "research output dir ~/git/research" || warn "~/git/research missing (the research roles write there)"
 has "$(HERMES_HOME="$root" hermes cron list 2>/dev/null)" "Release finished kanban worktrees" && pass "worktree release cron" || warn "worktree release cron missing (./install.sh --kanban)"
 
 echo "Things only the human can do"
 if has "$(HERMES_HOME="$root" hermes auth list 2>/dev/null)" "anthropic" || [ -n "${ANTHROPIC_API_KEY:-}" ]; then pass "Anthropic credentials"
 else warn "no Anthropic credentials: hermes model (or hermes auth add anthropic --no-browser on a server)"; fi
-if has "$(HERMES_HOME="$root" hermes gateway status 2>&1)" "PID"; then pass "gateway running (it hosts the dispatcher)"
-else warn "gateway not running, so nothing gets dispatched: hermes gateway install"; fi
+# The gateway's PID file records the home it serves; `hermes gateway status` can report another home's service.
+pidf="$root/gateway.pid"
+gpid="$(sed -n 's/.*"pid": *\([0-9][0-9]*\).*/\1/p' "$pidf" 2>/dev/null)"
+ghome="$(sed -n 's/.*"hermes_home": *"\([^"]*\)".*/\1/p' "$pidf" 2>/dev/null)"
+ghome="$(cd "${ghome:-/nonexistent}" 2>/dev/null && pwd -P)"
+if [ -n "$gpid" ] && kill -0 "$gpid" 2>/dev/null && [ "$ghome" = "$root" ]; then pass "gateway running for this home (PID $gpid); it hosts the dispatcher"
+else warn "no gateway running for $root, so nothing gets dispatched: hermes gateway install"; fi
 
 echo
 echo "$fails fail, $warns warn"

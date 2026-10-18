@@ -44,6 +44,7 @@ hermes gateway install           # run the dispatcher as a background service (s
 |---|---|
 | *(roles…)* | Install only these roles, e.g. `./install.sh lead engineer reviewer` |
 | `--kanban` | Applies [`team/kanban.yaml`](team/kanban.yaml) to the default profile (`default_assignee: lead`, 4 cards in flight, review lane on, no auto-decompose). It also creates the `research` board, one project-scoped board per git repo under `~/git` (override with `SQUAD_GIT_ROOT`) plus a `cross-repo` board, and a no-model cron that frees finished cards' worktrees every 5 minutes so their branches behave like normal branches |
+| `--extras` | Adds the no-model morning digest (07:30) and dashboard (every 5 minutes) crons; needs `--kanban` |
 | `--langfuse` | Installs and enables the official `langfuse` plugin per role. Fill in each profile's `.env` (the installer writes a `.env.EXAMPLE`); `HERMES_LANGFUSE_ENV=hermes-<role>` keeps cost grouped by role |
 | `--no-alias` | Skips the `lead`, `engineer`, … shell wrappers |
 | `--force-config` | On update, also resets each role's `config.yaml` to this repo's version |

@@ -1,11 +1,28 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # Create one project-scoped kanban board per git repo under $SQUAD_GIT_ROOT (default ~/git),
 # plus a cross-repo board, and share the project records with the dev roles.
 # Re-run after adding a repo. Runs kanban_repo_boards.py inside Hermes's own runtime.
 set -eu
 here="$(cd "$(dirname "$0")" && pwd)"
-root="${HERMES_HOME:-$HOME/.hermes}"
-case "$root" in */profiles/*) root="${root%/profiles/*}" ;; esac  # run from inside a role: use the Hermes root
+# Resolve the Hermes root exactly as Hermes does (hermes_constants.get_default_hermes_root):
+# HERMES_HOME inside ~/.hermes means ~/.hermes itself; <root>/profiles/<name> means <root>.
+# A HERMES_HOME elsewhere inside ~/.hermes is refused: Hermes would silently use the live home.
+resolve_root() {
+  local native="$HOME/.hermes" h hp np rel
+  h="${HERMES_HOME:-$native}"
+  hp="$(cd "$h" 2>/dev/null && pwd -P || echo "$h")"
+  np="$(cd "$native" 2>/dev/null && pwd -P || echo "$native")"
+  case "$hp/" in
+    "$np/"*)
+      rel="${hp#"$np"}"
+      case "$rel" in
+        ""|/profiles/*) echo "$np" ;;
+        *) echo "refusing: HERMES_HOME=$h is inside $native, and Hermes treats any path there as $native itself (the live home). Use a directory outside $native." >&2; return 1 ;;
+      esac ;;
+    *) if [ "$(basename "$(dirname "$hp")")" = profiles ]; then dirname "$(dirname "$hp")"; else echo "$hp"; fi ;;
+  esac
+}
+root="$(resolve_root)" || exit 2
 command -v hermes >/dev/null || { echo "hermes not found" >&2; exit 1; }
 # Ask the launcher for its interpreter and source tree; hermes_bootstrap then puts its deps on sys.path.
 cmd="$(hermes --print-runtime-command)"
