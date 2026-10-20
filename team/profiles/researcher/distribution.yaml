@@ -1,5 +1,5 @@
 name: researcher
-version: 1.3.0
+version: 1.4.0
 description: "Researcher. Answers one framed research question using web, docs and papers, and writes cited findings into ~/git/research. Non-code work only; never takes software engineering cards."
 hermes_requires: ">=0.22.0"
 author: "Anil Kerai"

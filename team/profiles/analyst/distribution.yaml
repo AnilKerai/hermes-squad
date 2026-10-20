@@ -1,5 +1,5 @@
 name: analyst
-version: 1.3.0
+version: 1.4.0
 description: "Research analyst. Fact-checks researchers' findings against their sources and synthesises them into a decision brief or recommendation in ~/git/research. Non-code work only; never takes software engineering cards."
 hermes_requires: ">=0.22.0"
 author: "Anil Kerai"

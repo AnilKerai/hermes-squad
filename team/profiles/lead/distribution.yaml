@@ -1,5 +1,5 @@
 name: lead
-version: 1.3.0
+version: 1.4.0
 description: "Software tech lead. Plans and decomposes software work in git repos into well-specified cards with acceptance criteria, and judges whether finished code meets the goal. Never implements code, reviews diffs, or takes research/product cards."
 hermes_requires: ">=0.22.0"
 author: "Anil Kerai"

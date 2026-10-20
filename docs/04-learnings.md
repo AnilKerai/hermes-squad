@@ -81,3 +81,21 @@ Each entry: what happened → why → what changed. Newest last. "Squad fix" = a
 ## Ready check and integration (18 Oct)
 
 42. **"Enough spec" was implicit, and the lead signed off whole features from handoffs it couldn't check.** The lead blocked only when it noticed ambiguity, and it has no terminal, so its final "criteria met" read claims. The reviewer can't fill that gap: it never edits code, so it can't merge branches. The lead had already found the fix itself and used it ad hoc (PMP-08c, 09e, 10c): a merge card for the engineer in the lead's own worktree. → Lead step 2 is a ready check: problem, acceptance criteria, out of scope, constraints, no open product decision. If the owner is needed, block once with every question and a recommended answer for each. Step 7 makes the merge card the rule for any feature with two or more branches in one repo, carrying the original card's acceptance criteria, so the reviewer verifies the whole feature on the merged branch. The human merges one branch. Delivery stays manual on purpose until the team is settled.
+
+## Bug hunts are planned by the lead, run by engineers, verified by the reviewer (20 Oct)
+
+43. **A read-only lead can't run a bug hunt, and no one checked the hunt's output before it became fix cards.** On model-harness an unassigned "bug hunt" card went to the lead (the default assignee), which has no terminal, web or delegation. It hunted alone in one pass: 81 file reads, 76 of 141 source files, 1 of 15 docs, ~15 min, ~$5. It filed 16 cards straight from reading the code. An independent audit (parallel verifiers, a probe test per finding, live API checks) found:
+    - 15 of 16 cards were real.
+    - One card was a false claim from memory: an Anthropic 400 that no longer happens.
+    - A documented security bug had been called "a product decision" because two tests pinned it, although EXTENDING.md says the opposite.
+    - About 13 more bugs, including a default model id that 404s on every call.
+    - **7 of the 16 cards specified a fix narrower than the bug.** One fix broke 19 tests through a test fake; others missed sibling call sites.
+
+    The review lane couldn't have caught the narrow fixes: it checks an implementation against its card, and the hunt card itself was completed by the lead, never reviewed. The reviewer was not the weak link. Its 5 change requests in the batch were all real, including a PII leak in a fix decision the audit had approved. → New `bug-hunt` skill (lead, engineer, reviewer):
+    - The lead splits the hunt into areas, with one engineer fact-finding card each.
+    - The engineer proves every finding with a probe that passes on unmodified code, cites a doc before calling anything intended, and works out each fix's scope by applying it in a scratch copy and running the full suite.
+    - Findings go through review: the reviewer re-runs the probes, checks fix scope on P1/P2 findings, and spot-checks uncovered files.
+    - The lead then writes fix cards whose Decisions cover the full fix scope.
+    - New rules in the lead SOUL: unverified claims never go into a card's Evidence, and "intended" or "product decision" needs a doc, ADR or CHANGELOG citation.
+
+    How we'll know it worked: replay the new process on model-harness @ a8d0267 (ground truth: ~/.hermes/evals/model-harness-bughunt-a8d0267) and measure how many of the known bugs it finds.

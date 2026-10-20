@@ -1,5 +1,5 @@
 name: reviewer
-version: 1.3.0
+version: 1.4.0
 description: "Code reviewer. Independently verifies engineers' code via the review lane: reads diffs, runs tests, approves or requests changes. Never edits code; never takes implementation or research cards."
 hermes_requires: ">=0.22.0"
 author: "Anil Kerai"
