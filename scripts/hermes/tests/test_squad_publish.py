@@ -247,3 +247,121 @@ class PublishCliTests(RepoCase):
         self.assertEqual(r.returncode, 1)
         self.assertTrue(r.stderr.startswith("error:"), r.stderr)
         self.assertIn("gh exploded", r.stderr)
+
+
+class CleanupTests(RepoCase):
+    """`kanban_release_worktrees.task_rows` is patched, so no board is read."""
+
+    def setUp(self):
+        super().setUp()
+        self.cards = [("t1", "done", str(self.wt), "feat/x")]  # (id, status, workspace_path, branch_name)
+        patcher = mock.patch("kanban_release_worktrees.task_rows", side_effect=lambda: list(self.cards))
+        self.task_rows = patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def add_worktree(self, tid, branch="feat/y"):
+        path = self.repo / ".worktrees" / tid
+        self.git("-C", str(self.repo), "worktree", "add", "-q", "-b", branch, str(path))
+        return path
+
+    def run_main(self, *argv):
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            rc = sp.main(list(argv))
+        return rc, out.getvalue(), err.getvalue()
+
+    def branches(self):
+        return self.git("-C", str(self.repo), "branch", "--list", "--format=%(refname:short)").split()
+
+    def test_releases_done_card_and_keeps_its_branch(self):
+        for status in ("done", "archived"):
+            with self.subTest(status):
+                self.cards = [("t1", status, str(self.wt), "feat/x")]
+                self.assertEqual(sp.cleanup(self.repo, ["t1"]), ["released t1 (branch feat/x)"])
+                self.assertFalse(self.wt.exists())
+                self.assertIn("feat/x", self.branches())
+                self.git("-C", str(self.repo), "worktree", "add", "-q", str(self.wt), "feat/x")
+
+    def test_keeps_unfinished_card(self):
+        for status in ("running", "review", "blocked", "todo"):
+            with self.subTest(status):
+                self.cards = [("t1", status, str(self.wt), "feat/x")]
+                self.assertEqual(sp.cleanup(self.repo, ["t1"]), [f"kept t1: card is {status}"])
+                self.assertTrue(self.wt.exists())
+
+    def test_keeps_dirty_worktree(self):
+        for name, edit in (("untracked", lambda: (self.wt / "scratch.txt").write_text("x")),
+                           ("modified", lambda: (self.wt / "feature.txt").write_text("changed"))):
+            with self.subTest(name):
+                edit()
+                (line,) = sp.cleanup(self.repo, ["t1"])
+                self.assertTrue(line.startswith("kept t1: "), line)
+                self.assertNotIn("\n", line)
+                self.assertTrue(self.wt.exists())
+                self.git("-C", str(self.wt), "checkout", "-q", ".")
+                (self.wt / "scratch.txt").unlink(missing_ok=True)
+
+    def test_continues_after_a_keep(self):
+        t2 = self.add_worktree("t2")
+        self.cards = [("t1", "running", str(self.wt), "feat/x"), ("t2", "done", str(t2), "feat/y")]
+        self.assertEqual(sp.cleanup(self.repo, ["t1", "t2"]),
+                         ["kept t1: card is running", "released t2 (branch feat/y)"])
+        self.assertTrue(self.wt.exists())
+        self.assertFalse(t2.exists())
+
+    def test_keeps_card_with_no_row_or_no_worktree(self):
+        self.cards = [("t5", "done", None, None)]
+        self.assertEqual(sp.cleanup(self.repo, ["t9", "t5"]), [
+            "kept t9: no such card",
+            f"kept t5: no worktree at {self.repo.resolve() / '.worktrees' / 't5'}"])
+
+    def test_keeps_worktree_another_unfinished_card_works_in(self):
+        for status, expect in (("running", "kept t1: in use by card t3"),
+                               ("done", "released t1 (branch feat/x)")):
+            with self.subTest(status):
+                # A dir-workspace card pointing at t1's worktree, spelled differently.
+                self.cards = [("t1", "done", str(self.wt), "feat/x"),
+                              ("t3", status, f"{self.wt}/../t1", None)]
+                self.assertEqual(sp.cleanup(self.repo, ["t1"]), [expect])
+                if status == "done":
+                    self.git("-C", str(self.repo), "worktree", "add", "-q", str(self.wt), "feat/x")
+                else:
+                    self.assertTrue(self.wt.exists())
+
+    def test_branch_falls_back_to_the_cards_branch_then_question_mark(self):
+        for tid, row_branch, expect in (("t2", "card/branch", "card/branch"), ("t3", None, "?")):
+            with self.subTest(tid):
+                path = self.repo / ".worktrees" / tid
+                self.git("-C", str(self.repo), "worktree", "add", "-q", "--detach", str(path))
+                self.cards = [(tid, "done", str(path), row_branch)]
+                self.assertEqual(sp.cleanup(self.repo, [tid]), [f"released {tid} (branch {expect})"])
+
+    def test_accepts_a_relative_repo_path(self):
+        old = os.getcwd()
+        self.addCleanup(os.chdir, old)
+        os.chdir(self.root)
+        self.assertEqual(sp.cleanup(Path("repo"), ["t1"]), ["released t1 (branch feat/x)"])
+        self.assertFalse(self.wt.exists())
+
+    def test_rejects_path_like_ids_before_touching_anything(self):
+        for bad in ("../x", "a/b", ".", "..", "", "t 1", "t1\n"):
+            with self.subTest(repr(bad)):
+                rc, out, err = self.run_main("cleanup", "--repo", str(self.repo), "t1", bad)
+                self.assertEqual((rc, out), (2, ""))
+                self.assertEqual(err, f"refused: bad task id {bad}\n")
+                self.assertTrue(self.wt.exists(), "a bad id must stop the whole run, t1 included")
+                self.task_rows.assert_not_called()
+
+    def test_cli_prints_one_line_per_id(self):
+        t2 = self.add_worktree("t2")
+        self.cards = [("t1", "running", str(self.wt), "feat/x"), ("t2", "done", str(t2), "feat/y")]
+        rc, out, err = self.run_main("cleanup", "--repo", str(self.repo), "t1", "t2", "t9")
+        self.assertEqual((rc, err), (0, ""))
+        self.assertEqual(out.splitlines(), ["kept t1: card is running", "released t2 (branch feat/y)",
+                                            "kept t9: no such card"])
+
+    def test_cli_as_a_script_reads_the_board_under_hermes_home(self):
+        r = subprocess.run([sys.executable, str(SCRIPTS / "squad_publish.py"), "cleanup",
+                            "--repo", str(self.repo), "t1"], capture_output=True, text=True)
+        self.assertEqual((r.returncode, r.stdout, r.stderr), (0, "kept t1: no such card\n", ""))
+        self.assertTrue(self.wt.exists())

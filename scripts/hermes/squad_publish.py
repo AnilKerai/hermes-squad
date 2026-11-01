@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish a feature branch as one PR.
+"""Publish a feature branch as one PR, and remove finished cards' worktrees.
 
 Used by `lead`, the only role allowed to publish; raw `git push` and `gh pr` are denied to
 every role, so this script is the one way out and its rules are enforced here, in code:
@@ -10,19 +10,29 @@ every role, so this script is the one way out and its rules are enforced here, i
            `a:b`), a dirty worktree, and a remote branch that is not an ancestor of the local
            one. Pushes are plain `refs/heads/<b>:refs/heads/<b>` and nothing lands on the
            default branch.
+  cleanup  `git worktree remove` (git refuses dirty trees) the worktrees of finished cards.
+           Branches are always kept.
 
 Exit codes: 0 ok, 2 refused (stderr `refused: <reason>`), 1 git/gh failure (stderr `error: ...`).
 
 Usage:
   squad_publish.py publish --repo <path> --branch <name> --title <text> --body-file <path>
+  squad_publish.py cleanup --repo <path> <task-id>...
 """
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
 from pathlib import Path
 
+# Sibling helper, installed next to this file in ~/.hermes/scripts/. Used as a module (not
+# from-imported) so `task_rows` and `TERMINAL` are looked up at call time.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import kanban_release_worktrees as krw  # noqa: E402
+
+TASK_ID = re.compile(r"[A-Za-z0-9_-]+")
 BRANCH_PREFIXES = ("refs/heads/", "refs/remotes/origin/", "origin/")
 
 
@@ -134,17 +144,59 @@ def publish(repo: Path, branch: str, title: str, body_file: Path) -> str:
     return lines[-1].strip()
 
 
+def cleanup(repo: Path, task_ids: list[str]) -> list[str]:
+    # Validate every id first, so a bad one changes nothing.
+    for tid in task_ids:
+        if not TASK_ID.fullmatch(tid):
+            raise Refused(f"bad task id {tid}")
+    repo = Path(repo).resolve()
+    rows = krw.task_rows()  # (id, status, workspace_path, branch_name)
+    by_id = {row[0]: row for row in rows}
+    lines = []
+    for tid in task_ids:
+        row = by_id.get(tid)
+        wt = repo / ".worktrees" / tid
+        if row is None:
+            lines.append(f"kept {tid}: no such card")
+        elif row[1] not in krw.TERMINAL:
+            lines.append(f"kept {tid}: card is {row[1]}")
+        elif not wt.exists():
+            lines.append(f"kept {tid}: no worktree at {wt}")
+        else:
+            other = next((o[0] for o in rows if o[0] != tid and o[2] and o[1] not in krw.TERMINAL
+                          and Path(o[2]).resolve() == wt.resolve()), None)
+            if other:
+                lines.append(f"kept {tid}: in use by card {other}")
+                continue
+            ref = next((ref for path, ref in worktrees(repo) if ref and Path(path).resolve() == wt.resolve()), None)
+            branch = (ref[len("refs/heads/"):] if ref else None) or row[3] or "?"
+            r = git(repo, "worktree", "remove", str(wt), check=False)
+            if r.returncode == 0:
+                lines.append(f"released {tid} (branch {branch})")
+            else:
+                reason = " ".join(r.stderr.split()) or "git worktree remove failed"
+                lines.append(f"kept {tid}: {reason}")
+    return lines
+
+
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="Publish a feature branch as one PR.")
+    ap = argparse.ArgumentParser(description="Publish a feature branch as one PR; remove finished worktrees.")
     sub = ap.add_subparsers(dest="command", required=True)
     pub = sub.add_parser("publish", help="push a branch and open (or reuse) one PR")
     pub.add_argument("--repo", required=True, type=Path)
     pub.add_argument("--branch", required=True)
     pub.add_argument("--title", required=True)
     pub.add_argument("--body-file", required=True, type=Path)
+    cln = sub.add_parser("cleanup", help="remove the worktrees of finished cards")
+    cln.add_argument("--repo", required=True, type=Path)
+    cln.add_argument("task_ids", nargs="+", metavar="task-id")
     args = ap.parse_args(argv)
     try:
-        print(publish(args.repo, args.branch, args.title, args.body_file))
+        if args.command == "publish":
+            print(publish(args.repo, args.branch, args.title, args.body_file))
+        else:
+            for line in cleanup(args.repo, args.task_ids):
+                print(line)
     except Refused as e:
         print(f"refused: {e}", file=sys.stderr)
         return 2
