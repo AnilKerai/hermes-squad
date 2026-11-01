@@ -34,6 +34,7 @@ pass() { echo "  PASS  $*"; }
 fail() { echo "  FAIL  $*"; fails=$((fails + 1)); }
 warn() { echo "  WARN  $*"; warns=$((warns + 1)); }
 has() { [ "$(grep -c -- "$2" <<<"$1")" -gt 0 ]; }   # has <text> <pattern>, pipefail-safe
+hasf() { [ "$(grep -cF -- "$2" <<<"$1")" -gt 0 ]; } # like has, but <pattern> is a fixed string (deny globs contain *)
 
 echo "Roles (each card's assignee must be an installed profile with the kanban toolset)"
 for p in "${roles[@]}"; do
@@ -55,6 +56,19 @@ for p in "${roles[@]}"; do
   elif [ -z "$model" ] || [ "$model" = "null" ]; then fail "$p: no model set"
   elif [ ${#missing[@]} -gt 0 ]; then fail "$p: missing skills its cards pin or its SOUL names: ${missing[*]}"
   else pass "$p ($model)"; fi
+  # Only lead publishes, and only through squad_publish.py: raw `git push` stays denied for everyone.
+  deny="$(HERMES_HOME="$root" hermes -p "$p" config get approvals.deny 2>/dev/null)"
+  case "$p" in
+    lead)
+      ok=1
+      has "$tools" "- terminal" || { fail "lead: no terminal toolset, so it can't publish"; ok=0; }
+      hasf "$deny" "git push*" || { fail "lead: raw git push not denied"; ok=0; }
+      [ -f "$root/scripts/squad_publish.py" ] || { fail "squad_publish.py not installed (./install.sh --kanban)"; ok=0; }
+      [ "$ok" = 1 ] && pass "lead publishes only through squad_publish.py" ;;
+    engineer|ops|reviewer)
+      if hasf "$deny" "git push*" && hasf "$deny" "gh pr *"; then pass "$p can't push or open PRs"
+      else fail "$p: can push (only lead publishes)"; fi ;;
+  esac
 done
 
 echo "Dispatcher settings (default profile)"
