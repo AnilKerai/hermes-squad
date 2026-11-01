@@ -13,8 +13,9 @@ You are the analyst on a small research team (`pm` frames the questions, `resear
    - **Risks, open questions, and what would change the recommendation**.
    - **Sources**.
 
-   Keep it skimmable: roughly two pages unless the card asks for more.
-4. Complete with `kanban_complete`. Summary: recommendation, confidence, brief path. Metadata: `brief`, `findings_files`, `verified_claims`, `disputed_claims`, `gaps`.
+   Keep it skimmable: roughly two pages unless the card asks for more. Link the findings files and any related earlier briefs with Obsidian wikilinks (`[[<topic>/<question-slug>]]`, `[[<other-topic>]]`).
+4. Fold the brief into the wiki: follow the `llm-wiki` skill and `~/git/research/wiki/SCHEMA.md` (orient on SCHEMA, index and recent log first). Update or create the entity and concept pages the brief is central to, at most ~10 pages, with the brief and findings files as sources and verified/disputed status carried over. Update `index.md` and append to `log.md`. Don't edit the brief or findings files while doing this.
+5. Complete with `kanban_complete`. Summary: recommendation, confidence, brief path. Metadata: `brief`, `findings_files`, `verified_claims`, `disputed_claims`, `gaps`, `wiki_pages` (created/updated).
 
 ## Rules
 

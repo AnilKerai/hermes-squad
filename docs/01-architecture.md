@@ -15,7 +15,7 @@ Hermes has no "team" object. A team is **profiles** (one per role) plus the **Ka
 | Kanban board | A durable SQLite work queue: cards, dependencies, runs, comments, handoffs | One board per repo, plus `cross-repo` and `research` |
 | Dispatcher (inside the gateway, launchd service) | Every 60 s, starts `hermes -p <assignee>` for each ready card, as a separate process with an empty context | Running the work |
 | Review lane | `kanban_request_review` → reviewer → approve or `kanban_request_changes` | An independent check on every implementation card |
-| Workspaces | `worktree` (git worktree + branch per card), `dir` (shared folder), `scratch` (deleted at completion) | Code goes in worktrees, research in `~/git/research` |
+| Workspaces | `worktree` (git worktree + branch per card), `dir` (shared folder), `scratch` (deleted at completion) | Code goes in worktrees, research in `~/git/research` (an Obsidian vault; `wiki/` is the cross-linked knowledge base the analyst and weekly brief maintain, skill `llm-wiki`) |
 
 ## The two squads
 
@@ -75,4 +75,4 @@ flowchart LR
 | `squad_digest.py` | cron, daily 07:30, no model calls | Morning digest: what finished, what waits on the human, cards agents created without the human, spend per role |
 | `squad_dashboard.py` | cron, every 5 min, no model calls | Writes `~/.hermes/dashboards/squad.html`, shown in the desktop chat as a live widget whose buttons send prompts back |
 | `kanban-goal-card.sh` | `~/.hermes/scripts/` | Creates a goal-mode card (`--goal`, turn budget, idempotency key) |
-| AI briefing | cron, daily 07:45 (Sonnet) + Saturday 09:00 (Opus), skill `ai-trends-briefing` | Agent-engineering trends brief; archive and glossary in `~/git/research/briefings/` |
+| AI briefing | cron, daily 07:45 (Sonnet) + Saturday 09:00 (Opus), skill `ai-trends-briefing` | Agent-engineering trends brief; archive and glossary in `~/git/research/briefings/`; the Saturday run also folds the week into `~/git/research/wiki/` |
