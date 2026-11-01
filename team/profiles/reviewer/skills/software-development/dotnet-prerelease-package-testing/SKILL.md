@@ -198,5 +198,11 @@ pin to make (e.g. move to the stable when it is tagged).
   them present and `--skip-duplicate` skips. Verify by counting "Your package was pushed".
 - **Bound every wait with a counted `for` loop** around the check (CI status, feed
   indexing) so the tool call ends before its timeout.
+- **Predict NU1605 from the nuspecs, not the family name.** NU1605 fires only for a consumer's
+  *direct* pin of a package the new library version requires at a higher minimum. Read each
+  `.nupkg`'s nuspec `<dependency id=… version=…>` with Python `zipfile` to list those packages;
+  other `Microsoft.Extensions.*` pins restore unchanged, and transitive `Microsoft.Extensions.*`
+  (Logging, Hosting.Abstractions…) stay below the new minimum even when every direct pin is
+  raised, so "all `Microsoft.Extensions.*` = X" is never a checkable resolution claim.
 - **Never compute the published version** (merge commits and `paths:` filters change the
   height) — read it from the publish job log or the feed.

@@ -193,6 +193,11 @@ pin to make (e.g. move to the stable when it is tagged).
 
 ## Pitfalls
 
+- **Never pack or restore a local build under a real (or future) release version.** `~/.nuget/packages`
+  keys on id+version and never re-downloads, so a locally packed `5.0.0` shadows the real 5.0.0 when it is
+  published. Pack local probes as a prerelease (`-p:MinVerVersionOverride=X.Y.Z-local.<n>` with MinVer) and
+  use a fresh `<n>` on every repack, or a restore silently picks up the earlier build.
+
 - **`Conflict` on a `.snupkg` push step after the `.nupkg` step is benign** — `dotnet nuget
   push *.nupkg` also uploads the sibling `.snupkg`, so a second explicit symbols push finds
   them present and `--skip-duplicate` skips. Verify by counting "Your package was pushed".

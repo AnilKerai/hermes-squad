@@ -42,6 +42,8 @@ az deployment group what-if --subscription <sub> --resource-group <rg> \
 - Read the what-if: every **Delete** or replace must be intended and explained in the handoff.
 - Run any repo script (e.g. `deploy/test-bicep.sh`) after reading it. If it deploys, don't run it; the deny rules block it anyway.
 - Pipelines: validate YAML; every `secrets.*`/`vars.*` referenced must be listed in the handoff for the human to create.
+- GitHub Actions only masks a secret's value in a job that uses it. When a value moves from `secrets.X` to `vars.X`, the logs are unmasked once the workflow stops referencing the secret, even before the old secret is deleted. So a "set the var, merge, check the log, delete the secret" order works.
+- `dotnet nuget push *.nupkg` also pushes each matching `.snupkg`, but only when the `.nupkg` push succeeded. With `--skip-duplicate`, a 409 on the `.nupkg` skips its `.snupkg` too. An explicit `*.snupkg` step is redundant on a normal run, but it is the only thing that recovers symbols when a job is re-run after a partial failure. Raise that as a note, not a blocker.
 - Containers: `docker build` locally; non-root user, pinned base image tag.
 
 ## Never (tool-blocked for ops and reviewer)

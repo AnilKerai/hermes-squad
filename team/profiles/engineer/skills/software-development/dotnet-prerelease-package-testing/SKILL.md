@@ -132,6 +132,31 @@ done
   `~/.nuget/packages/<id>/<V>/.nupkg.metadata` (a dotfile — a `*.nupkg.metadata` glob misses
   it). That proves the pin restores anywhere.
 
+## Step 4c — Probe an unpublished library branch from a local feed (nothing committed, nothing pushed)
+
+For "will the consumers still build on the library's next major" before any CI package exists:
+
+- Scratch-clone the library branch, each consumer (`git clone <repo> <s>/x && git -C <s>/x checkout <sha>`), never
+  touch `~/git/<repo>`. Record `git status --porcelain` + `rev-parse HEAD` of each real repo before and after.
+- `dotnet pack <lib>.slnx -c Release -o <s>/feed -p:MinVerVersionOverride=5.0.0-probe.<n>`. MinVer 8 honours the
+  override (read the version back from each `.nuspec`: `<version>` and the inter-package dependency ranges).
+  Fresh `<n>` per repack (the global cache keys on id+version); never pack a plain `5.0.0`. Count `*.nupkg`
+  (`.snupkg` doubles the file count). A clone of a local repo warns SourceLink/`origin` invalid on pack: ignore.
+- In each consumer clone, bump every `<lib>*` reference with a regex on the exact old version and append
+  `<add key="probe-feed" value="<s>/feed" />` to its `nuget.config` (keep nuget.org; add a mapping entry only if
+  the repo uses mapping).
+- Restore first with **only** the library pins moved and save the log: NU1605 names exactly which direct pins the
+  new floors beat (here only `Microsoft.Extensions.DependencyInjection`, not `Configuration.Json` or `Options`).
+  Raise only the flagged ones; the rest of a lower-pinned family restores fine, so say so rather than raising all.
+- Order per consumer: `restore` -> `build --no-restore --no-incremental` -> `test --no-build`, an exit code after
+  each. Prove the binaries are the probe's: sha256 of `bin/Debug/<tfm>/<Adapter>.dll` equals the one inside the
+  `.nupkg`. Then run the card's literal `dotnet test` once so the day-to-day command is shown to work.
+- Resolution evidence: keys of `libraries` in every project's `obj/project.assets.json` (library pins, the
+  adapter SDK, the lowered pins) plus `logs` empty. The Web-SDK DemoUi gets DI from the shared framework, so it
+  has no DI entry: not an omission.
+- Cleanup: delete the scratch clones and feed, and `rm -rf ~/.nuget/packages/<lib id lowercase>*/5.0.0-probe.*`
+  (list them first; `.nupkg.metadata` there names the scratch feed as source).
+
 ## Step 5 — Bump, build, test, eval, compare
 
 - Bump every package of the family to the **same** version. `replace_all` on the exact old
