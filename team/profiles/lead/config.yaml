@@ -95,7 +95,7 @@ updates:
   pre_update_backup: false
   backup_keep: 5
   non_interactive_local_changes: stash
-_config_version: 50
+_config_version: 51
 session_reset:
   mode: none
   idle_minutes: 1440
@@ -109,6 +109,7 @@ platform_toolsets:
     - memory
     - session_search
     - skills
+    - terminal
     - todo
   telegram:
     - hermes-telegram
@@ -208,6 +209,13 @@ approvals:
     - gh workflow run*
     - gh secret *
     - gh variable set*
+    - git push*
+    - git -C * push*
+    - gh pr merge*
+    - gh api * -X *
+    - gh api * --method *
+    - git branch -D*
+    - git reset --hard*
 known_builtin_toolsets:
   cli:
     - browser

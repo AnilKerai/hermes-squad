@@ -153,7 +153,7 @@ def scan(root: Path) -> list[str]:
     problems = []
     for f in sorted(root.rglob("*")):
         rel = f.relative_to(root).parts
-        if not f.is_file() or {".git", "__pycache__", ".idea"} & set(rel) or f.name == ".DS_Store" \
+        if not f.is_file() or {".git", "__pycache__", ".idea", "node_modules"} & set(rel) or f.name == ".DS_Store" \
                 or ".bak" in f.name:
             continue
         try:
