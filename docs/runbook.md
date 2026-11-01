@@ -70,7 +70,7 @@ If the lead blocked with `refused:` from `squad_publish.py`, read the reason: it
 | Rotate Langfuse keys | Edit `~/.hermes/.env` only, then `python3 ~/.hermes/scripts/sync_langfuse_env.py`. |
 
 ## Release a new version of the roles
-Bump `VERSION`, run `python3 scripts/snapshot_team.py`, commit, then `git tag v$(cat VERSION) && git push --follow-tags`. Machines that installed the squad pick it up with `git pull && ./install.sh`.
+Bump `VERSION`, run `python3 scripts/snapshot_team.py`, commit, then `git tag v$(cat VERSION) && git push origin main v$(cat VERSION)` (a plain tag isn't pushed by `--follow-tags`). Machines that installed the squad pick it up with `git pull && ./install.sh`.
 
 ## Move to another machine (e.g. a private server)
 Two routes, depending on whether the agents' memories and history should come along:
