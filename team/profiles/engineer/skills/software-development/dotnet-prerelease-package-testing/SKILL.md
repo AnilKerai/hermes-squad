@@ -156,6 +156,10 @@ For "will the consumers still build on the library's next major" before any CI p
   has no DI entry: not an omission.
 - Cleanup: delete the scratch clones and feed, and `rm -rf ~/.nuget/packages/<lib id lowercase>*/5.0.0-probe.*`
   (list them first; `.nupkg.metadata` there names the scratch feed as source).
+- A card may name a package by its project name (`...Infrastructure.Anthropic`): read the real PackageId from the
+  `dotnet pack` output (`SapphireGuard.ModelHarness.Anthropic`). To compile a CHANGELOG snippet, extract the fenced
+  block from the release section with a script, `textwrap.dedent` it, and wrap each Before/After half in its own `{ }`
+  scope in a top-level-statements probe (both halves declare the same variable), so the text that ships is what compiles.
 
 ## Step 5 — Bump, build, test, eval, compare
 
