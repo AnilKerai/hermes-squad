@@ -121,10 +121,19 @@ class PublishTests(RepoCase):
         self.assertEqual(self.git("-C", str(self.remote), "rev-parse", "main"), main_before)
         self.assertIn(f"pr create --base main --head feat/x --title T --body-file {self.body}", self.gh_calls())
 
+    def test_push_is_a_plain_same_name_refspec(self):
+        with mock.patch.object(sp, "git", wraps=sp.git) as git:
+            self.publish()
+        pushes = [c.args[1:] for c in git.call_args_list if c.args[1] == "push"]
+        self.assertEqual(pushes, [("push", "origin", "refs/heads/feat/x:refs/heads/feat/x")])  # no +, -u, --force
+        self.assertEqual(subprocess.run(["git", "-C", str(self.repo), "config", "--get", "branch.feat/x.remote"],
+                                        capture_output=True, text=True).stdout, "", "no upstream tracking")
+
     def test_pr_base_is_the_repos_default_branch(self):
         self.git("-C", str(self.repo), "push", "-q", "origin", "main:develop")
         self.git("-C", str(self.repo), "remote", "set-head", "origin", "develop")
-        self.assert_refused("develop")
+        self.assert_refused("develop", "default branch")
+        self.assert_refused("main", "default branch")  # main stays protected when it isn't the default
         self.assertEqual(self.publish(), URL)
         self.assertIn(f"pr create --base develop --head feat/x --title T --body-file {self.body}", self.gh_calls())
 
@@ -139,10 +148,12 @@ class PublishTests(RepoCase):
             self.assert_refused("feat/x", "can't determine the default branch")
 
     def test_refuses_default_branch(self):
+        # A real local `master`, so it can only be refused by the protection rule, not by "no local branch".
+        self.git("-C", str(self.repo), "branch", "master", "main")
         for name in ("main", "MAIN", "master", "HEAD", "origin/main", "refs/heads/main",
                      "refs/remotes/origin/main"):
             with self.subTest(name):
-                self.assert_refused(name)
+                self.assert_refused(name, "default branch")
 
     def test_refuses_missing_body_file_before_pushing(self):
         before = self.remote_refs()
@@ -282,6 +293,10 @@ class CleanupTests(RepoCase):
                 self.assertIn("feat/x", self.branches())
                 self.git("-C", str(self.repo), "worktree", "add", "-q", str(self.wt), "feat/x")
 
+    def test_branch_label_comes_from_the_worktree_not_the_card(self):
+        self.cards = [("t1", "done", str(self.wt), "card/other")]
+        self.assertEqual(sp.cleanup(self.repo, ["t1"]), ["released t1 (branch feat/x)"])
+
     def test_keeps_unfinished_card(self):
         for status in ("running", "review", "blocked", "todo"):
             with self.subTest(status):
@@ -360,7 +375,7 @@ class CleanupTests(RepoCase):
         self.assertEqual(out.splitlines(), ["kept t1: card is running", "released t2 (branch feat/y)",
                                             "kept t9: no such card"])
 
-    def test_cli_as_a_script_reads_the_board_under_hermes_home(self):
+    def test_cli_runs_as_a_script_and_finds_its_sibling_module(self):
         r = subprocess.run([sys.executable, str(SCRIPTS / "squad_publish.py"), "cleanup",
                             "--repo", str(self.repo), "t1"], capture_output=True, text=True)
         self.assertEqual((r.returncode, r.stdout, r.stderr), (0, "kept t1: no such card\n", ""))

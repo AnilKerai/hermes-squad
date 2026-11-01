@@ -109,7 +109,7 @@ def publish(repo: Path, branch: str, title: str, body_file: Path) -> str:
     default = default_branch(repo)
     protected = {default.lower(), "main", "master"}
     if typed.lower() in protected or resolved.lower() in protected:
-        raise Refused(f"{branch} is the default branch ({default}); nothing is published to it")
+        raise Refused(f"{branch} is protected (default branch {default}); nothing is published to it")
     # 4. A real local branch.
     if resolved == "HEAD" or git(repo, "show-ref", "--verify", "--quiet", f"refs/heads/{resolved}",
                                  check=False).returncode != 0:
