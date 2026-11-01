@@ -8,21 +8,39 @@ The branch is always kept, so you can `git checkout` it in your IDE.
 
 Hermes' built-in cleanup only removes worktrees whose commits are pushed; our engineers
 never push, so this fills the gap. Silent unless it released something (cron no-agent job).
+
+The boards live under the Hermes root: HERMES_HOME, or its grandparent when HERMES_HOME is a
+profile (<root>/profiles/<role>), or ~/.hermes when unset. It is resolved on every call.
 """
 import os
 import sqlite3
 import subprocess
 from pathlib import Path
 
-HERMES = Path(os.environ.get("HERMES_HOME") or Path.home() / ".hermes")
 GIT_ROOT = Path(os.environ.get("SQUAD_GIT_ROOT") or Path.home() / "git").expanduser()
-KANBAN_DBS = [HERMES / "kanban.db", *sorted((HERMES / "kanban" / "boards").glob("*/kanban.db"))]
 TERMINAL = {"done", "archived"}
+
+
+def hermes_root():
+    """The Hermes root, which holds kanban.db and kanban/boards. A profile's HERMES_HOME
+    (<root>/profiles/<role>) maps to <root>, as in Hermes' own _hermes_root_of. Unlike Hermes, a
+    path that is merely under ~/.hermes (a worker's scratch dir) is not mapped to ~/.hermes, so
+    a test's HERMES_HOME can't reach the live boards."""
+    home = os.environ.get("HERMES_HOME")
+    if not home:
+        return Path.home() / ".hermes"
+    home = Path(home)
+    return home.parent.parent if home.parent.name == "profiles" else home
+
+
+def kanban_dbs():
+    root = hermes_root()
+    return [root / "kanban.db", *sorted((root / "kanban" / "boards").glob("*/kanban.db"))]
 
 
 def task_rows():
     rows = []
-    for db in KANBAN_DBS:
+    for db in kanban_dbs():
         if not db.exists():
             continue
         try:
