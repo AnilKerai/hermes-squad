@@ -1,0 +1,9 @@
+{
+  "name": "hermes-web-defuddle",
+  "private": true,
+  "type": "module",
+  "description": "Node side of the Hermes defuddle web_extract plugin",
+  "dependencies": {
+    "defuddle": "0.19.6"
+  }
+}

@@ -1,0 +1,13 @@
+name: web-defuddle
+version: 1.0.0
+description: >
+  Local web_extract backend: fetches each page on this machine (SSRF-guarded),
+  then pulls out the main content as markdown with defuddle. Full article text,
+  no navigation chrome, no API key. Non-HTML pages (PDFs) and pages that need
+  JavaScript to render come back as errors so Hermes's keyless free tier serves
+  them instead.
+author: hermes-squad
+kind: backend
+requires_hermes: ">=0.22.0"
+provides_web_providers:
+  - defuddle
