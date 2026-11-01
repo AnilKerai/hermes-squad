@@ -29,7 +29,7 @@ Research systems converge on Manager / Planner / Engineer / Reviewer roles runni
 
 | Here | Rating |
 |---|---|
-| lead / engineer / ops / reviewer, pm / researcher / analyst; the board is the durable state; one writer per card and branch; the human merges. Nearly the same structure as Argus. | **Aligned** |
+| lead / engineer / ops / reviewer, pm / researcher / analyst; the board is the durable state; one writer per card and branch; the lead opens one PR per feature and the human merges it. Nearly the same structure as Argus. | **Aligned** |
 | Self-improvement isn't gated by review: memory and skill write approval are off, and lessons are applied by hand when noticed. | **Gap** (planned weekly retro) |
 
 ### 4. Context engineering as a discipline
@@ -46,7 +46,7 @@ A trivial rule written in a file got 60–68% compliance across 1,650 Claude Cod
 | Here | Rating |
 |---|---|
 | Tool-level `approvals.deny` per role (tested: 24 commands × 4 profiles plus a live probe); trimmed toolsets; instruction-file protection on for non-writers. | **Aligned** for infrastructure |
-| "Never push" (engineer), "always request review", "handoff fields present" are SOUL text only; credentials are shared via `$HOME`. | **Partial** |
+| "Never push" is now tool-level for engineer, ops and reviewer, and lead publishes only through a guarded script; "always request review" and "handoff fields present" are SOUL text only; credentials are shared via `$HOME`. | **Partial** |
 
 ### 6. Memory: agents propose, humans promote
 Self-written skills don't substitute for curated ones ([SkillsBench](https://arxiv.org/abs/2602.12670)); whole-context LLM rewrites degrade accuracy ([ACE](https://arxiv.org/abs/2510.04618)); cited, verified, itemised memories raised Copilot's merge rate from 83% to 90% ([GitHub](https://github.blog/ai-and-ml/github-copilot/building-an-agentic-memory-system-for-github-copilot), vendor, single source).

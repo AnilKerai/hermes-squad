@@ -6,8 +6,10 @@ Once the card is done/archived on any board, no unfinished card uses that path, 
 worktree is clean, this runs `git worktree remove` (no --force: git refuses dirty trees).
 The branch is always kept, so you can `git checkout` it in your IDE.
 
-Hermes' built-in cleanup only removes worktrees whose commits are pushed; our engineers
-never push, so this fills the gap. Silent unless it released something (cron no-agent job).
+Hermes' built-in cleanup only removes worktrees whose commits are pushed; engineers never
+push, and lead only pushes the feature's final branch (its `squad_publish.py cleanup` releases
+the children it names), so this is the backstop. Silent unless it released something (cron
+no-agent job).
 
 The boards live under the Hermes root: HERMES_HOME, or its grandparent when HERMES_HOME is a
 profile (<root>/profiles/<role>), or ~/.hermes when unset. It is resolved on every call.

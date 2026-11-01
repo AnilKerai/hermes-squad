@@ -34,7 +34,7 @@ hermes kanban --board <repo> create "<title>" --body-file card.md --assignee lea
 hermes kanban --board research create "<title>" --body-file card.md --assignee pm --workspace dir:~/git/research
 ```
 
-The card body is the only brief a worker gets: state the goal, constraints, and how to verify the result. Humans merge the agents' branches; no role pushes or merges.
+The card body is the only brief a worker gets: state the goal, constraints, and how to verify the result. When a feature is done, `lead` pushes its final branch and opens one PR through `~/.hermes/scripts/squad_publish.py`, which refuses the default branch and force-pushes. No other role can push, and no role merges: humans merge the PR.
 
 ## Changing a role
 

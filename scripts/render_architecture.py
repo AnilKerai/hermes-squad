@@ -81,8 +81,8 @@ box(920, 340, 300, 64, "store", "research board", "dir workspace ~/git/research"
 # ---- Row D: squads ----------------------------------------------------------
 region(30, 444, 800, 250, "#34d399", "Dev squad")
 region(315, 462, 500, 222, "#fb7185", "approvals.deny: no deploy / push / cloud writes", dash="4,4", label_x=462)
-box(60, 512, 220, 64, "agent", "lead · Opus xhigh", "plans, decides contracts,", "judges vs original criteria")
-box(335, 486, 220, 64, "agent", "engineer · Sonnet xhigh", "code + tests in the card's", "worktree; never pushes")
+box(60, 512, 220, 64, "agent", "lead · Opus xhigh", "plans, judges vs criteria,", "opens one PR per feature")
+box(335, 486, 220, 64, "agent", "engineer · Sonnet xhigh", "code + tests in the card's", "worktree; can't push")
 box(335, 602, 220, 64, "agent", "ops · Sonnet high", "Bicep, pipelines, Docker;", "validates only (what-if)")
 box(600, 544, 200, 64, "agent", "reviewer · Opus xhigh", "re-runs Verify, red checks;", "never edits")
 
@@ -92,7 +92,7 @@ box(1060, 486, 175, 64, "agent", "researcher ×N", "Sonnet · one question", "ea
 box(1060, 602, 175, 64, "agent", "analyst · Opus xhigh", "spot-checks sources,", "writes the brief")
 
 # ---- Row E: outputs -----------------------------------------------------------
-box(60, 744, 330, 64, "store", "Branch per card in ~/git/<repo>", "worktree released when done;", "you merge (ff-only) and push")
+box(60, 744, 330, 64, "store", "Branch per card in ~/git/<repo>", "lead pushes the feature branch;", "you merge the PR")
 box(460, 744, 330, 64, "external", "Langfuse", "a trace per turn, env hermes-<role>;", "cost per role (v2 metrics)")
 box(870, 744, 360, 64, "store", "~/git/research", "briefs · findings · AI briefings", "archive + glossary")
 

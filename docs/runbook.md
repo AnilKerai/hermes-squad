@@ -53,10 +53,12 @@ For a capability block (missing access, protected file), fix the capability or d
 - **Redirect a running worker:** desktop "Note & requeue" (workers read comments only at start).
 
 ## Merge agent work
-1. Card `done` (approved). Never merge a branch a worker may still write to.
-2. `git fetch && git checkout main && git merge --ff-only <branch>`.
+1. The lead's card is `done` and its summary links the PR (`metadata.pr_url`). The lead pushed the feature branch and released the finished children's worktrees; the worktree cron releases the rest.
+2. Review the PR on GitHub, then merge it there (or locally: `git fetch && git checkout main && git merge --ff-only origin/<branch> && git push`).
 3. Build and test on `main` (`git clean -fdX` first if the layout changed).
-4. `git push`, `git branch -d <branch>`, `git worktree prune`.
+4. `git branch -d <branch>`, `git worktree prune`.
+
+If the lead blocked with `refused:` from `squad_publish.py`, read the reason: it never publishes to the default branch, over a moved remote branch, or from a dirty worktree. Fix the cause; don't loosen the script.
 
 ## Change the team
 | Change | Steps |

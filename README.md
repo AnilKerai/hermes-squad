@@ -14,15 +14,15 @@ If you're an agent setting this up, follow [`AGENTS.md`](AGENTS.md). It has the 
 
 | Role | Team | Model · thinking | Job | Guard rails |
 |---|---|---|---|---|
-| `lead` | dev | Opus 5.5 · xhigh | Turns a goal into cards with decisions, acceptance criteria and verify commands, routes each card to `engineer` or `ops`, and checks finished work against the original goal | No terminal or web; plans, never implements |
-| `engineer` | dev | Sonnet 5.5 · xhigh | Implements one card in a git worktree (.NET / ASP.NET Core, Blazor, MAUI, React + TS), adds tests, keeps `AGENTS.md`/`CLAUDE.md` current, requests review | Never pushes or merges; cloud and cluster CLIs denied |
-| `ops` | dev | Sonnet 5.5 · high | Bicep/ARM for Azure PaaS, GitHub Actions, Dockerfiles, k8s. Validates with build, lint and `what-if`, and lists the exact deploy steps for the human | Validates only: mutating `az`/`kubectl`/`helm`/`terraform`, pipeline runs, secrets and `git push` are denied at tool level |
+| `lead` | dev | Opus 5.5 · xhigh | Turns a goal into cards with decisions, acceptance criteria and verify commands, routes each card to `engineer` or `ops`, and checks finished work against the original goal | Plans, never implements. Its terminal is only for publishing (`squad_publish.py`: pushes the feature branch and opens one PR, refuses the default branch and force-pushes) and quick read-only checks; raw `git push` and `gh pr merge` are denied |
+| `engineer` | dev | Sonnet 5.5 · xhigh | Implements one card in a git worktree (.NET / ASP.NET Core, Blazor, MAUI, React + TS), adds tests, keeps `AGENTS.md`/`CLAUDE.md` current, requests review | `git push` and `gh pr` denied at tool level; cloud and cluster CLIs denied |
+| `ops` | dev | Sonnet 5.5 · high | Bicep/ARM for Azure PaaS, GitHub Actions, Dockerfiles, k8s. Validates with build, lint and `what-if`, and lists the exact deploy steps for the human | Validates only: mutating `az`/`kubectl`/`helm`/`terraform`, pipeline runs, secrets, `git push` and `gh pr` are denied at tool level |
 | `reviewer` | dev | Opus 5.5 · xhigh | Re-runs tests and validation itself, checks the diff against the card, gives one verdict: approve, request changes, or escalate | Never edits code; same deny list as `ops` |
 | `pm` | research | Opus 5.5 · xhigh | Works out the decision an idea should inform and frames 2–5 research questions as researcher cards, plus an analyst card that depends on them | No terminal or web; never does the research itself |
 | `researcher` | research | Sonnet 5.5 · medium | Answers one question from primary sources, with every claim cited through the `grounded-citations` ledger | Never fabricates sources |
 | `analyst` | research | Opus 5.5 · xhigh | Spot-checks the load-bearing claims and writes a skimmable decision brief | Verifies, doesn't redo the research |
 
-Work starts as a card on a repo board for `lead`, or as an idea on the `research` board for `pm`. The lead or pm breaks it into child cards. Finished implementation cards go through the review lane to `reviewer`. When all its children are done, the lead or pm wakes up and judges the result against the original goal. A human merges every branch.
+Work starts as a card on a repo board for `lead`, or as an idea on the `research` board for `pm`. The lead or pm breaks it into child cards. Finished implementation cards go through the review lane to `reviewer`. When all its children are done, the lead or pm wakes up and judges the result against the original goal. The lead then publishes the feature's final branch as one PR; a human reviews and merges it.
 
 ## Install the squad
 

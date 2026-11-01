@@ -41,7 +41,8 @@ flowchart LR
   R -->|changes requested| E
   R -->|approved| L2[lead wakes<br/>judges vs original criteria]
   L2 -->|gaps| E
-  L2 -->|done| M[Human merges and deploys]
+  L2 -->|done: squad_publish| P[one PR per feature]
+  P --> M[Human merges and deploys]
   E -.->|blocked: decision or credential| H
 ```
 
@@ -55,8 +56,8 @@ flowchart LR
 | Risk | Control | Strength |
 |---|---|---|
 | Agents change live infrastructure | `approvals.deny` per profile: ops and reviewer can read and validate only; the other roles have no `az` / `azd` / `kubectl` / `helm` / `terraform` | Hard for terminal commands, including inside scripts that call the terminal tool. A raw `subprocess` in Python gets around it. |
-| Unreviewed code ships | Review lane; engineer and ops SOUL say "never `kanban_complete`"; human merges | Process plus SOUL rule (no tool-level gate) |
-| Pushing or merging | Blocked for ops and reviewer; SOUL rule for the engineer | Mixed |
+| Unreviewed code ships | Review lane; engineer and ops SOUL say "never `kanban_complete`"; lead publishes only after the reviewer approves; human merges the PR | Process plus SOUL rule (no tool-level gate) |
+| Pushing or merging | `git push` and `gh pr` denied for engineer, ops and reviewer. Lead: raw `git push`, `gh pr merge` and `gh api` writes denied; it publishes only through `squad_publish.py`, which refuses the default branch (and `main`/`master`), refspec tricks, dirty worktrees and non-fast-forward pushes, and never merges | Hard for terminal commands (deny globs plus tested script). No server-side branch protection on private repos (GitHub Free), so a raw `subprocess` could still push |
 | Runaway cost | `max_in_progress: 4`, per-role compression, the "no verbatim-quote checking" rule for researchers | Soft |
 | Editing instruction files | Only the engineer and ops may edit `AGENTS.md`/`CLAUDE.md`; the reviewer scrutinises those diffs | Config plus review |
 
