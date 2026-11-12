@@ -26,6 +26,8 @@ Defaults for this user's UI work. **The repo's AGENTS.md/CLAUDE.md and existing 
 - Secrets never go in the bundle. Only the Supabase anon key and public config belong in the client; anything privileged belongs server-side (RLS policies or edge functions).
 - Check the change runs with `expo start --web` where possible, and say in the handoff what you could and couldn't exercise (native modules, push, purchases).
 
+- **expo-notifications (0.32.x).** Android token needs `google-services.json` plus `android.googleServicesFile` in `app.json` (the setting without the file fails every prebuild) and an **FCM V1 service account key** uploaded to EAS (`eas credentials`; docs.expo.dev/push-notifications/fcm-credentials/, read 2026-11-07); never commit that key file. Below Android 13 `getPermissionsAsync` is already `granted` when system notifications are on, so there is no dialog and a silent registration runs at first launch. With no `setNotificationHandler` a push that arrives in the foreground is not shown. The Android channel must exist on the device before a push that names it (create it before registering the token). Only one file should value-import the module, and its decisions belong in a pure `utils/*Rules.ts` so `npm test` can cover them.
+
 ## All UI
 - Accessibility basics: labels on inputs and icon buttons, keyboard and screen-reader reachable, no colour-only meaning.
 - Loading, empty and error states for anything that fetches data.

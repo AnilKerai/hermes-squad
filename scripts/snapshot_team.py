@@ -33,7 +33,10 @@ PROFILES = ["lead", "engineer", "ops", "reviewer", "pm", "researcher", "analyst"
 AUTHOR = "Anil Kerai"
 LICENSE = "MIT"
 HERMES_REQUIRES = ">=0.22.0"
-SKIP = shutil.ignore_patterns("__pycache__", "*.pyc", ".DS_Store", "*.bak*", ".usage.json*")
+# Also skipped: runtime state the helper scripts write (e.g. .briefing_gate_state.json) and
+# one-off local scripts that aren't part of the distribution.
+SKIP = shutil.ignore_patterns("__pycache__", "*.pyc", ".DS_Store", "*.bak*", ".usage.json*",
+                              ".*_state.json", "research_wiki_seed_start.sh")
 KANBAN_KEYS = [
     ("kanban.orchestrator_profile", "empty: each team's lead owns its own cards"),
     ("kanban.default_assignee", "unassigned cards go to the dev lead"),
