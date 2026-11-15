@@ -18,16 +18,18 @@ The repo is public, so fix every hit before committing.
 
 Private repo and employer names live only in .leakcheck.local, which is git-ignored: one
 case-insensitive regex per line, no blank lines, '#' comments allowed. The script reads
-<repo>/.leakcheck.local, else the main checkout's copy (a worktree has no untracked files). When
-it finds the file, the copied skill files get every match replaced by [redacted] (a match's
-leading and trailing non-alphanumeric characters stay), and the scan exits 1 on a match in any
-file's contents or path, reporting file, line and pattern number but never the matched text.
-Without the file the scan prints a warning and skips that check.
+<repo>/.leakcheck.local, else the main checkout's copy (a worktree lacks the main checkout's
+untracked files). When it finds the file, the copied skill files get every match replaced by
+[redacted] (a match's leading and trailing non-alphanumeric characters stay), and the scan
+exits 1 on a match in any file's contents or path, reporting file, line and pattern number
+but never the matched text. Without the file the scan prints a warning and skips that check.
 
 Usage:  python3 scripts/snapshot_team.py      # then: git diff
 Re-run after any SOUL/config/skill change so the change shows up as a reviewable diff.
 For a release, bump VERSION first, then commit and tag v<version>.
 """
+from __future__ import annotations
+
 import hashlib
 import re
 import shutil
@@ -115,7 +117,9 @@ def redact(text: str, private: Private) -> str:
         lead, _, trail = BOUNDARY.fullmatch(m.group(0)).groups()
         return f"{lead}[redacted]{trail}"
     for _, rx in private:
-        text = rx.sub(mask, text)
+        # A match consumes its boundary characters, so a name right after another can survive one pass.
+        while (done := rx.sub(mask, text)) != text:
+            text = done
     return text
 
 
@@ -222,7 +226,7 @@ def scan(root: Path, private: Private | None = None) -> list[str]:
                 if label == "email address" and EMAIL_ALLOW.search(m.group(0)):
                     continue
                 line = text.count("\n", 0, m.start()) + 1
-                problems.append(f"{shown}:{line}: {label}: {redact(m.group(0)[:40], private)}")
+                problems.append(f"{shown}:{line}: {label}: {redact(m.group(0), private)[:40]}")
         for n, rx in private:
             # The name starts after the match's leading boundary character, which may be the newline before it.
             lines = {text.count("\n", 0, m.start() + len(BOUNDARY.fullmatch(m.group(0)).group(1))) + 1
