@@ -11,3 +11,6 @@ memories/
 sessions/
 state.db*
 *.bak*
+
+# Private name patterns for the snapshot scan (never commit)
+.leakcheck.local

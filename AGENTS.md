@@ -46,6 +46,6 @@ The card body is the only brief a worker gets: state the goal, constraints, and 
 
 ## Rules
 
-- **This repo is public.** Never commit keys, tokens, `.env`, `auth.json`, memories, sessions, emails, phone numbers or absolute home paths. The snapshot script refuses on these. Write paths as `~/…`.
+- **This repo is public.** Never commit keys, tokens, `.env`, `auth.json`, memories, sessions, emails, phone numbers or absolute home paths. The snapshot script refuses on these. Write paths as `~/…`. Private repo and employer names go only in the git-ignored `.leakcheck.local` (one case-insensitive regex per line, no blank lines, kept in the main checkout root, where worktrees find it). The snapshot redacts them in skills, and the scan refuses them anywhere else. Without the file the scan prints a warning and skips this check.
 - Keep `README.md`, this file and `docs/runbook.md` accurate when you change how the squad is installed or routed. Add dated lessons to `docs/04-learnings.md` and gaps to `docs/06-roadmap.md`.
 - Test installer changes against a throwaway Hermes home, never the live one: `HERMES_HOME=$(mktemp -d /tmp/hsq-test.XXXXXX) SQUAD_GIT_ROOT=<scratch dir with a test repo> ./install.sh --kanban --no-alias`. Keep the home outside `~/.hermes`: Hermes treats any `HERMES_HOME` inside `~/.hermes` as the live home, so `install.sh` refuses one. `hermes kanban --board <b> dispatch --dry-run` then shows which role each probe card would go to, without spending tokens. Don't start a gateway in that home.
