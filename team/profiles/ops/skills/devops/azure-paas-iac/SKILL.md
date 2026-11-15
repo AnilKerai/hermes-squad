@@ -9,7 +9,7 @@ metadata:
 
 # Azure PaaS infrastructure-as-code
 
-Conventions and the validation procedure for this user's infrastructure work. **The repo's existing IaC layout, naming and AGENTS.md win over this file.** Existing examples: `bh-app-thread-portal/deploy/` (main.bicep + modules/, `parameters.<env>.json`, `test-bicep.sh`, GitHub Actions `deploy-infrastructure.yml`) and `ballistic/infra/bicep/`.
+Conventions and the validation procedure for this user's infrastructure work. **The repo's existing IaC layout, naming and AGENTS.md win over this file.** Existing examples: `[redacted]/deploy/` (main.bicep + modules/, `parameters.<env>.json`, `test-bicep.sh`, GitHub Actions `deploy-infrastructure.yml`) and `[redacted]/infra/bicep/`.
 
 ## Layout & naming (as the repos already do it)
 - `main.bicep` orchestrates; one module per resource type under `modules/`. Extend a module before creating a new one.

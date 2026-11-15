@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare two eval-harness result runs, case by case.
+"""Compare two [redacted] result runs, case by case.
 
 Usage:
   compare_eval_runs.py OLD_RUN_DIR NEW_RUN_DIR [--labels OLD NEW] [--log STDOUT_LOG ...]
