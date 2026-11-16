@@ -43,6 +43,12 @@ until the brief lands so the PM can judge it.
   structure, step budget (150 steps, skeleton first), topic-wide out-of-scope, "leads are not facts".
 - Settle naming, labels, baselines and file names yourself and write them into every body; never
   let two cards decide the same thing.
+- When two cards need the same list (e.g. domain rules), write a starting list with stable ids
+  (R1–R9) in the shared block, give one card ownership of refining it and the other the job of
+  mapping it, and have the analyst merge the two by id.
+- For a follow-on topic that proposes changes to an earlier example spec, paste the spec's fixed
+  facts (schema, arms, sensor rule, store editions, banned plugins, per-run cost) into the shared
+  block, so proposals are costed on one basis and don't silently break fixed decisions.
 - Comparable size: give the heaviest cards explicit priority order and caps (e.g. ≤8 rows).
 - Every card: `workspace_kind="dir"`, `workspace_path="~/git/research"`, and an
   `idempotency_key` like `<topic>/<letter>-<slug>` so a retry doesn't duplicate.
@@ -79,13 +85,40 @@ until the brief lands so the PM can judge it.
   two sections, is a material gap even when the analyst says "no follow-up needed".
 - Also test the example spec's acceptance criteria and pre-stated readings for passability and
   coverage (e.g. a test that cannot pass on the chosen edition; an undefined margin band).
+- For proposed spec changes, check four more things:
+  - **Experimental claims vs arm design.** "Arm X tests same-content A vs B" holds only if both
+    sides get the content.
+  - **Every new answer check against each template whose truth is the exception.** For example,
+    a name maps to several Clients but a reference pins one, so the truth is `Resolved`. A loosely
+    worded check can reject correct answers.
+  - **Timing.** Each change's timing (pre-pilot / at the gate / after it) must agree across
+    sections.
+  - **Detection bars.** A reading's bar needs a minimum detectable effect computed on the
+    *scored* n per category, after any dev split.
+- When the gaps are only wording or design (no new sources), one analyst addendum card is
+  enough; skip the researcher card. Put an optional one-fact check on the analyst card.
 - The brief is immutable once the analyst card completes, so the revision is an addendum file
   `~/git/research/<topic>-addendum.md` (frontmatter `type: brief-addendum`, `amends: <topic>`),
   with the follow-up findings in `<topic>/<slug>.md`. One researcher card (parts in priority
   order) + one analyst addendum card is enough for a handful of checkable facts.
 - Before blocking again, comment the interim answer on the PM card so the user has the
   recommendation while the follow-up runs.
+- On every wake, `kanban_show` each card the analyst created (its metadata `gaps`, or the
+  `verified_cards` in its completion event). These cards are not linked to yours and can finish
+  minutes later with a result that changes the decision. If one is still running, link your card
+  under it rather than completing. If it is done, judge its result before you close.
+- When a spec fixes an environment restriction (an edition, "no plugins", read-only), have a
+  researcher check each off-the-shelf component's hard prerequisites in its source or changelog,
+  not only the README. For example, an official MCP server can refuse `initialize` without a
+  plugin that its README never mentions. Do this at fan-out, not after the analyst.
 - When woken after the addendum: check each gap you named is closed (fact settled, conflict
   resolved, criterion passable, rule has no hole), spot-check 2-3 addendum figures against the
-  follow-up findings, then complete. Tell the user the build spec is "brief §6 as amended by
-  addendum §3", and list what is the user's call (policy, provider) separately from research gaps.
+  follow-up findings, then complete. Tell the user the full build-spec read order (e.g. "KG brief
+  §6 → KG addendum §3 → brief §4 → addendum §3 → addendum 2 §2"), and list what is the user's
+  call (policy, provider) separately from research gaps.
+- Grep the named earlier file for each paste block's "replaces X" anchor. A block whose anchor
+  text doesn't exist is not paste-ready, even if its content is right.
+- When a fix swaps an off-the-shelf component for host-built tools, re-check that paired arms
+  stay same-content: same output layout, same description source. Prefer live-store
+  introspection over text generated from the model, since generated text makes a coverage
+  criterion compare the model with itself.

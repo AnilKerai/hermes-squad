@@ -38,6 +38,7 @@ Defaults for this user's backend work. **The repo's AGENTS.md/CLAUDE.md and its 
   - Every INSERT/UPDATE policy has `WITH CHECK`. A policy with only `USING` doesn't check inserted rows.
   - `WITH CHECK` sees only the new row, so it can't make a column immutable (owner, billing, entitlement columns). Guard those with a trigger.
   - Take the user id from the verified JWT or `auth.uid()`, never from the request body.
+- **Apache AGE read-only roles:** AGE (1.6.0, PG16) checks INSERT for Cypher `CREATE`/`MERGE`, but not UPDATE/DELETE. A role with only SELECT on the label tables can `SET`, `REMOVE`, `DELETE` and `DETACH DELETE` through `cypher()`, and READ ONLY transactions, BEFORE triggers and RLS don't stop it. Give the agent role no graph grants and expose fixed Cypher through SECURITY DEFINER functions. Every AGE function is PUBLIC-executable. Edge traversals need `ag_catalog` on the role's `search_path`, even when calls are qualified.
 - **Server-only objects:** Supabase's default privileges grant every new table and view to `anon`/`authenticated`. A server-only table or view needs RLS on with no policies, plus `REVOKE ALL ... FROM anon, authenticated`. Repeat the revoke whenever the object is dropped and recreated.
 - **Functions:** a `SECURITY DEFINER` function sets `search_path`, revokes `EXECUTE` from `PUBLIC, anon, authenticated` and grants only the role that calls it.
 - **Triggers on the same event fire in name order.** When order matters, encode it in the names and note it in the repo's agent file.
