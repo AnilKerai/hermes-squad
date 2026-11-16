@@ -47,7 +47,8 @@ HERMES_REQUIRES = ">=0.22.0"
 # Also skipped: runtime state the helper scripts write (e.g. .briefing_gate_state.json) and
 # one-off local scripts that aren't part of the distribution.
 SKIP = shutil.ignore_patterns("__pycache__", "*.pyc", ".DS_Store", "*.bak*", ".usage.json*",
-                              ".*_state.json", "research_wiki_seed_start.sh")
+                              ".*_state.json", "research_wiki_seed_start.sh", "handbook_layout.py",
+                              "handbook_migrate.py", "midwest_summit_watch.py")
 KANBAN_KEYS = [
     ("kanban.orchestrator_profile", "empty: each team's lead owns its own cards"),
     ("kanban.default_assignee", "unassigned cards go to the dev lead"),
@@ -78,6 +79,8 @@ LEAKCHECK = ".leakcheck.local"
 # Splits a private-name match into its boundary characters (not letters or digits) and the name.
 BOUNDARY = re.compile(r"([^a-z0-9]*)(.*?)([^a-z0-9]*)", re.I | re.S)
 Private = list[tuple[int, re.Pattern[str]]]  # (line number in .leakcheck.local, compiled regex)
+# A pattern matching any of these would match the placeholder redact() writes (alone, or between boundaries).
+PLACEHOLDER_SAMPLES = ("[redacted]", "a [redacted] a", "a[redacted]a")
 
 
 def run(*args: str) -> str:
@@ -107,8 +110,17 @@ def load_private(repo: Path) -> Private:
     path = leakcheck_file(repo)
     if path is None:
         return []
-    return [(n, re.compile(line, re.I | re.M)) for n, line in enumerate(path.read_text().splitlines(), 1)
-            if line.strip() and not line.startswith("#")]
+    private = []
+    for n, line in enumerate(path.read_text().splitlines(), 1):
+        if not line.strip() or line.startswith("#"):
+            continue
+        rx = re.compile(line, re.I | re.M)
+        if any(rx.search(sample) for sample in PLACEHOLDER_SAMPLES):
+            # redact() would never finish: each pass would re-match inside its own replacement.
+            raise SystemExit(f"{LEAKCHECK} line {n}: the pattern matches the [redacted] placeholder; "
+                             "make it more specific")
+        private.append((n, rx))
+    return private
 
 
 def redact(text: str, private: Private) -> str:
@@ -226,7 +238,7 @@ def scan(root: Path, private: Private | None = None) -> list[str]:
                 if label == "email address" and EMAIL_ALLOW.search(m.group(0)):
                     continue
                 line = text.count("\n", 0, m.start()) + 1
-                problems.append(f"{shown}:{line}: {label}: {redact(m.group(0), private)[:40]}")
+                problems.append(f"{shown}:{line}: {label}: {redact(redact(m.group(0), private)[:40], private)}")
         for n, rx in private:
             # The name starts after the match's leading boundary character, which may be the newline before it.
             lines = {text.count("\n", 0, m.start() + len(BOUNDARY.fullmatch(m.group(0)).group(1))) + 1
