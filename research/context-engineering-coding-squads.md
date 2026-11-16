@@ -751,22 +751,22 @@ Everything in 6.1 was observed read-only on 12 Oct 2026. Anything outside the re
 
 | Repo | `AGENTS.md` | `CLAUDE.md` lines (size) | Hermes worker loads | Notes |
 |---|---|---|---|---|
-| ballistic | 6-line pointer | 104 (4.9 KB) | Pointer | No negative constraints |
-| ballistic-landing | 6-line pointer | 35 (2.2 KB) | Pointer | |
-| bh-app-thread-portal | 6-line pointer | 97 (5.6 KB) | Pointer | 2 commits since last update |
-| claude-plugin-engineering | 3-line pointer | 15 (2.0 KB) | Pointer | Short invariants with reasons: the model to copy |
-| debtor-verification-agent | 1-line pointer | 142 (9.8 KB) | Pointer | "Roadmap" section |
-| email-triage-agent | none | 117 (14.9 KB) | `CLAUDE.md` | "Open decisions" section; 4 commits since |
-| email-triage-jev | none | **261** (18.5 KB) | `CLAUDE.md` | "Status" and "Next steps" sections |
-| eval-harness | 1-line pointer | **302** (21.8 KB) | Pointer | 12 commits since |
-| innovation-lab-skills | 6-line pointer | 33 (1.9 KB) | Pointer | |
-| istyar | 7-line pointer | 95 (6.4 KB) | Pointer | 4 commits since |
+| Repo A | 6-line pointer | 104 (4.9 KB) | Pointer | No negative constraints |
+| Repo B | 6-line pointer | 35 (2.2 KB) | Pointer | |
+| Repo C | 6-line pointer | 97 (5.6 KB) | Pointer | 2 commits since last update |
+| Repo D | 3-line pointer | 15 (2.0 KB) | Pointer | Short invariants with reasons: the model to copy |
+| Repo E | 1-line pointer | 142 (9.8 KB) | Pointer | "Roadmap" section |
+| Repo F | none | 117 (14.9 KB) | `CLAUDE.md` | "Open decisions" section; 4 commits since |
+| Repo G | none | **261** (18.5 KB) | `CLAUDE.md` | "Status" and "Next steps" sections |
+| Repo H | 1-line pointer | **302** (21.8 KB) | Pointer | 12 commits since |
+| Repo I | 6-line pointer | 33 (1.9 KB) | Pointer | |
+| Repo J | 7-line pointer | 95 (6.4 KB) | Pointer | 4 commits since |
+| Repo K | 5-line pointer | 90 (7.7 KB) | Pointer | 14 commits since |
+| Repo L | 6-line pointer | 58 (2.7 KB) | Pointer **to a file not in HEAD** | `CLAUDE.md` never committed, so worktrees lack it |
+| Repo M | 6-line pointer | 87 (4.6 KB) | Pointer | |
 | katas | 6-line pointer | 123 (5.9 KB) | Pointer | Strong gotchas; long derivable structure list |
 | model-harness | 1-line pointer | 173 (**44.9 KB**, ~11K tokens) | Pointer | "Roadmap status"; only repo with an ADR folder |
-| plan-my-party | 5-line pointer | 90 (7.7 KB) | Pointer | 14 commits since |
-| sandbox-cs | 6-line pointer | 58 (2.7 KB) | Pointer **to a file not in HEAD** | `CLAUDE.md` never committed, so worktrees lack it |
 | vibes-asb-manager | 6-line pointer | 56 (2.2 KB) | Pointer | **51 commits** since last update |
-| vibes-k8s-manager | 6-line pointer | 87 (4.6 KB) | Pointer | |
 
 "Commits since" counts commits after the last one touching `CLAUDE.md`: a staleness signal, not proof. Against sections 3 and 4: 13 of 16 files list build, test or run commands and most carry real gotchas (good). All 16 have a structure or architecture section, the derivable overview the ETH study found unhelpful.[3] Four hold task state. None has a where-to-look index or a "done means" section, no repo has a nested `AGENTS.md`, and four files have no negative constraints. Three exceed the budget. Renamed unchanged, model-harness's file would be head/tail-truncated by Hermes's context-file character cap (dynamic, with a 20,000-character floor).[24]
 
@@ -787,7 +787,7 @@ So the engineers who need the .NET skill hold the older copy, and the reviewer's
 
 **Hooks.** Each profile's `hooks/` directory is where gateway hooks live, and those run "Gateway only", never in a Kanban worker (verified today).[84] Hooks that can gate a worker live under `hooks:` in `config.yaml`, which I could not read.
 
-**Org standards reach Claude Code only.** `~/git/claude-plugin-engineering/CLAUDE.md` describes an `eng-standards` plugin. It injects your standards into every Claude Code session through a `SessionStart` hook, keeps the rule text only in `SKILL.md` bodies, preloads them into a reviewer subagent, gates `Stop` on a review, and adds a `-dotnet` skill only where a `.csproj` or `.sln` exists (observed). That is the org layer of 3.3 done well. Hermes workers don't run Claude Code, so unless a profile's `skills.external_dirs` or a hook points at those files, Hermes engineers never see them.
+**Org standards reach Claude Code only.** Repo D's `CLAUDE.md` describes a standards plugin. It injects your standards into every Claude Code session through a `SessionStart` hook, keeps the rule text only in `SKILL.md` bodies, preloads them into a reviewer subagent, gates `Stop` on a review, and adds a `-dotnet` skill only where a `.csproj` or `.sln` exists (observed). That is the org layer of 3.3 done well. Hermes workers don't run Claude Code, so unless a profile's `skills.external_dirs` or a hook points at those files, Hermes engineers never see them.
 
 **Memory.** Capped at 2,200 and 1,375 characters per profile.[25] Memory files are outside the read permission, so whether they hold standards, task state or personal data is a check in 6.5.
 
@@ -821,16 +821,16 @@ Effort is your time: S under 3 h, M 3–10 h, L over 10 h. Benefit is my estimat
 
 | # | Change | Label | Effort | Expected benefit | Rests on |
 |---|---|---|---|---|---|
-| 1 | **Invert the context files.** One `cross-repo` card per repo: move `CLAUDE.md` content into `AGENTS.md` (template 3.4) and make `CLAUDE.md` `@AGENTS.md` plus Claude-only lines; drop derivable structure lists; move roadmap, status, next-steps and open-decisions sections to cards or `docs/`; add where-to-look and done-means sections; cut eval-harness, email-triage-jev and model-harness to ≤150 lines (required for model-harness to avoid truncation); commit sandbox-cs's file; add `AGENTS.md` to the email repos; change the engineer SOUL to "`AGENTS.md` is canonical" | `[Hermes]` `[Claude Code]` | M, 6–8 h | **High.** Every Hermes card starts with the repo's commands, gotchas and done-means pinned in the system prompt; Claude Code sees the same content | G1, G2; 1.5, 3.3, 4.1 |
+| 1 | **Invert the context files.** One `cross-repo` card per repo: move `CLAUDE.md` content into `AGENTS.md` (template 3.4) and make `CLAUDE.md` `@AGENTS.md` plus Claude-only lines; drop derivable structure lists; move roadmap, status, next-steps and open-decisions sections to cards or `docs/`; add where-to-look and done-means sections; cut Repo H, Repo G and model-harness to ≤150 lines (required for model-harness to avoid truncation); commit Repo L's file; add `AGENTS.md` to Repo F and Repo G; change the engineer SOUL to "`AGENTS.md` is canonical" | `[Hermes]` `[Claude Code]` | M, 6–8 h | **High.** Every Hermes card starts with the repo's commands, gotchas and done-means pinned in the system prompt; Claude Code sees the same content | G1, G2; 1.5, 3.3, 4.1 |
 | 2 | **Typed handoff plus completion gate.** Lead card fields gain **Constraints** (verbatim, with source), **Out of scope / when not to act** and **Read first**; engineer metadata gains the 2.3 block; `pre_tool_call` gate on `kanban_request_review` (template 3.4), and a reviewer gate on `kanban_complete` requiring `reviewer_checks`; test on a throwaway board first | `[Hermes]` | M, 4–6 h | **High.** Constraints and dead ends survive handoffs; incomplete handoffs bounce back automatically | G3; 2.3, 3.4 |
 | 3 | **Enforce "never push or merge"**: `pre_tool_call` on `terminal` in the engineer and reviewer profiles, matching `git push`, merges into main and `--force`, with `fail_closed: true` | `[Hermes]` | S, 1–2 h | **Medium-high.** A stated invariant becomes a guarantee | G4; 3.4 |
 | 4 | **Gate and share skills**: `skills.write_approval` and `memory.write_approval` on in all six profiles; squad workflow skills (the fuller `sdlc-review` and `dotnet-prerelease-package-testing`, future house skills) in one git repo read through `skills.external_dirs`, read-only by file permission; remove the stale per-profile copies | `[Hermes]` | S, 2–3 h | **Medium-high.** One reviewed copy per skill; self-patching becomes proposals you approve | G5; 2.4, 4.4 |
-| 5 | **Bring `eng-standards` to Hermes**: add the plugin's skill directory to the engineer and reviewer `skills.external_dirs`, or a `pre_llm_call` hook that injects the universal body on the first turn and the `-dotnet` body in .NET workspaces | `[Hermes]` | S, 2–3 h | **Medium.** One source of standards text for both tools | G6; 3.3 |
+| 5 | **Bring the standards plugin to Hermes**: add the plugin's skill directory to the engineer and reviewer `skills.external_dirs`, or a `pre_llm_call` hook that injects the universal body on the first turn and the `-dotnet` body in .NET workspaces | `[Hermes]` | S, 2–3 h | **Medium.** One source of standards text for both tools | G6; 3.3 |
 | 6 | **Instruction-file hygiene rules**: engineer SOUL caps `AGENTS.md` at ~150 lines, routes each learning to its narrowest home (test or analyser before an `AGENTS.md` line before `docs/`), bans task state and asks for negative constraints with reasons; the reviewer checks the budget and runs the listed commands | `[Hermes]`, tool-neutral | S, ~1 h | **Medium.** Stops the files regrowing after change 1 | G2; 4.1, 4.4 |
 | 7 | **Contract-first cross-repo rules**: a final contract card after consumers merge; producer metadata carries `contract_version` and changed symbols; the lead's wake-up check reviews contract diff plus consumer call-site diffs; publishing repos add `PublicApiAnalyzers` or `oasdiff` to their verify commands | `[Hermes]`, tool-neutral | S for the SOUL; M per publishing repo | **Medium**, rising with cross-repo volume | G7; 3.2 |
 | 8 | **.NET gates per repo**: `EnforceCodeStyleInBuild`, `TreatWarningsAsErrors`, `dotnet format --verify-no-changes`, and NetArchTest where layering matters, listed in `AGENTS.md` and run by the change-2 gate | Tool-neutral | L, 1–2 h per repo across ~10 repos | **Medium-high per repo.** Style and quality rules leave the prompt entirely | G4; 3.4 |
 | 9 | **Trace with outcomes**: tag worker traces with card id, repo, `ctx` (git SHA of `AGENTS.md`) and model; post `merged`, `reviewRounds` and `ciFirstPass` after you merge (template 5.4) | `[Hermes]` | M, 6–10 h | **Medium.** Cost per merged card; whether a context change helped | G8; 5.4 |
-| 10 | **Regression set**: 10–20 past cards from your busiest repos, replayed headless when `AGENTS.md`, a SOUL or a squad skill changes, comparing pass rate, review rounds and cost. Your `eval-harness` repo may be reusable; I did not assess it | Tool-neutral | L, 10–15 h | **Medium**, compounding: the only way to know whether changes 1–7 helped | G8; 4.5 |
+| 10 | **Regression set**: 10–20 past cards from your busiest repos, replayed headless when `AGENTS.md`, a SOUL or a squad skill changes, comparing pass rate, review rounds and cost. Your private eval repo (Repo H) may be reusable; I did not assess it | Tool-neutral | L, 10–15 h | **Medium**, compounding: the only way to know whether changes 1–7 helped | G8; 4.5 |
 | 11 | **Progress file for multi-run cards**: on a retry or requested changes, the engineer keeps `docs/progress/<card-id>.md` in the worktree (template 2.2) and reads it first | `[Hermes]` | S, ~1 h | **Low-medium.** Most cards fit one session | G9; 2.2 |
 | 12 | **Version and retention hygiene**: pin the Hermes version (live docs already differ from the installed version); schedule session pruning and card archiving; confirm nothing in `hooks/` is meant to gate workers | `[Hermes]` | S, 1–2 h | **Low-medium.** No silent behaviour changes; bounded stores | G10; 5.3, 7 |
 
@@ -843,8 +843,8 @@ Changes 1–4 are the "first three" in section 0, with change 3 folded into H2. 
 | Profile `config.yaml`: `hooks:`, both `write_approval` flags, `skills.external_dirs`, `agent.verify_on_stop`, compression threshold, observer or Langfuse plugin | Changes 2–5 and 9 depend on current values | Read `~/.hermes/profiles/<profile>/config.yaml` |
 | Whether Hermes engineers open `CLAUDE.md` after the pointer | Sizes the benefit of change 1 | Search a few recent worker sessions for an early `read_file` of `CLAUDE.md` |
 | Profile `hooks/` contents | Anything meant as a worker gate there is inert | List them |
-| Repo `.claude/` directories and whether `eng-standards` is installed | Path rules and Claude Code gates may already exist | `/memory` and `/hooks` in a Claude Code session |
-| `eng-standards` skill bodies | Change 5 needs their size and fit for Hermes | Read `plugins/eng-standards/skills/*/SKILL.md` |
+| Repo `.claude/` directories and whether the standards plugin is installed | Path rules and Claude Code gates may already exist | `/memory` and `/hooks` in a Claude Code session |
+| The standards plugin's skill bodies | Change 5 needs their size and fit for Hermes | Read the plugin's `skills/*/SKILL.md` |
 | Profile memory contents | Shadow facts or personal data | `hermes journey` per profile |
 | A live `pre_tool_call` gate on `kanban_request_review` | Inferred from source only | A throwaway board with one dummy card |
 

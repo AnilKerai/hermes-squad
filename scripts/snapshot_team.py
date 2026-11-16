@@ -12,13 +12,24 @@ team/skill-drift.md (which roles hold which version of each agent-made skill), a
 helper scripts from ~/.hermes/scripts/ to scripts/hermes/.
 
 It never reads .env, auth.json, memories, sessions or state databases. It rewrites the home
-directory to ~, then scans the whole repo and exits 1 if anything looks like a secret, an email,
-a phone number or an absolute home path. The repo is public, so fix every hit before committing.
+directory to ~, then scans every file git would commit (tracked, plus untracked and not ignored)
+and exits 1 if anything looks like a secret, an email, a phone number or an absolute home path.
+The repo is public, so fix every hit before committing.
+
+Private repo and employer names live only in .leakcheck.local, which is git-ignored: one
+case-insensitive regex per line, no blank lines, '#' comments allowed. The script reads
+<repo>/.leakcheck.local, else the main checkout's copy (a worktree lacks the main checkout's
+untracked files). When it finds the file, the copied skill files get every match replaced by
+[redacted] (a match's leading and trailing non-alphanumeric characters stay), and the scan
+exits 1 on a match in any file's contents or path, reporting file, line and pattern number
+but never the matched text. Without the file the scan prints a warning and skips that check.
 
 Usage:  python3 scripts/snapshot_team.py      # then: git diff
 Re-run after any SOUL/config/skill change so the change shows up as a reviewable diff.
 For a release, bump VERSION first, then commit and tag v<version>.
 """
+from __future__ import annotations
+
 import hashlib
 import re
 import shutil
@@ -36,7 +47,8 @@ HERMES_REQUIRES = ">=0.22.0"
 # Also skipped: runtime state the helper scripts write (e.g. .briefing_gate_state.json) and
 # one-off local scripts that aren't part of the distribution.
 SKIP = shutil.ignore_patterns("__pycache__", "*.pyc", ".DS_Store", "*.bak*", ".usage.json*",
-                              ".*_state.json", "research_wiki_seed_start.sh")
+                              ".*_state.json", "research_wiki_seed_start.sh", "handbook_layout.py",
+                              "handbook_migrate.py", "midwest_summit_watch.py")
 KANBAN_KEYS = [
     ("kanban.orchestrator_profile", "empty: each team's lead owns its own cards"),
     ("kanban.default_assignee", "unassigned cards go to the dev lead"),
@@ -63,6 +75,12 @@ FORBIDDEN = {
     "phone number": re.compile(r"(?<![\w.])\+?44\d{9,10}\b"),
 }
 EMAIL_ALLOW = re.compile(r"@(example\.(com|org)|users\.noreply\.github\.com)$")
+LEAKCHECK = ".leakcheck.local"
+# Splits a private-name match into its boundary characters (not letters or digits) and the name.
+BOUNDARY = re.compile(r"([^a-z0-9]*)(.*?)([^a-z0-9]*)", re.I | re.S)
+Private = list[tuple[int, re.Pattern[str]]]  # (line number in .leakcheck.local, compiled regex)
+# A pattern matching any of these would match the placeholder redact() writes (alone, or between boundaries).
+PLACEHOLDER_SAMPLES = ("[redacted]", "a [redacted] a", "a[redacted]a")
 
 
 def run(*args: str) -> str:
@@ -76,6 +94,45 @@ def yaml_str(s: str) -> str:
 def portable(text: str) -> str:
     """Rewrite the home directory to ~ so paths work on any machine."""
     return text.replace(str(Path.home()), "~")
+
+
+def leakcheck_file(repo: Path) -> Path | None:
+    """The private-name pattern file: <repo>'s own, else the main checkout's (worktrees lack it)."""
+    candidates = [repo / LEAKCHECK]
+    common = run("git", "-C", str(repo), "rev-parse", "--path-format=absolute", "--git-common-dir").strip()
+    if common:
+        candidates.append(Path(common).parent / LEAKCHECK)
+    return next((p for p in candidates if p.is_file()), None)
+
+
+def load_private(repo: Path) -> Private:
+    """(line number, regex) for each pattern in .leakcheck.local; empty when no file is found."""
+    path = leakcheck_file(repo)
+    if path is None:
+        return []
+    private = []
+    for n, line in enumerate(path.read_text().splitlines(), 1):
+        if not line.strip() or line.startswith("#"):
+            continue
+        rx = re.compile(line, re.I | re.M)
+        if any(rx.search(sample) for sample in PLACEHOLDER_SAMPLES):
+            # redact() would never finish: each pass would re-match inside its own replacement.
+            raise SystemExit(f"{LEAKCHECK} line {n}: the pattern matches the [redacted] placeholder; "
+                             "make it more specific")
+        private.append((n, rx))
+    return private
+
+
+def redact(text: str, private: Private) -> str:
+    """Replace each private-name match with [redacted], keeping its boundary characters."""
+    def mask(m: re.Match[str]) -> str:
+        lead, _, trail = BOUNDARY.fullmatch(m.group(0)).groups()
+        return f"{lead}[redacted]{trail}"
+    for _, rx in private:
+        # A match consumes its boundary characters, so a name right after another can survive one pass.
+        while (done := rx.sub(mask, text)) != text:
+            text = done
+    return text
 
 
 def description(profile: str) -> str:
@@ -123,7 +180,8 @@ def kanban_settings() -> str:
     lines = ["# Dispatcher and gateway settings for the default profile (it hosts the kanban dispatcher).",
              "# `./install.sh --kanban` applies them with `hermes config set`. Generated; do not edit."]
     for key, why in KANBAN_KEYS:
-        value = run("hermes", "config", "get", key).strip().splitlines()
+        # -p default: a worker's HERMES_HOME is its own role profile, whose config is not the dispatcher's
+        value = run("hermes", "-p", "default", "config", "get", key).strip().splitlines()
         value = value[-1].strip() if value else ""
         value = "" if value in ("null", "None") else value
         lines.append(f"{key}: {yaml_str(value)}" + (f"  # {why}" if why else ""))
@@ -151,14 +209,26 @@ def drift_report(hashes: dict[str, dict[str, str]]) -> str:
     return "\n".join(out) + "\n"
 
 
-def scan(root: Path) -> list[str]:
-    """Every text file under root (skipping .git, caches and backups) checked against FORBIDDEN."""
+def scan(root: Path, private: Private | None = None) -> list[str]:
+    """Every text file git would commit under root (tracked, or untracked and not ignored) checked
+    against FORBIDDEN and the private patterns. Private hits name file, line and pattern, not the text."""
+    if private is None:
+        private = load_private(root)
+    if not private:
+        print(f"scan: WARNING: no {LEAKCHECK} found; private names were not checked")
+    listed = subprocess.run(["git", "-C", str(root), "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+                            capture_output=True, text=True, check=True).stdout
     problems = []
-    for f in sorted(root.rglob("*")):
-        rel = f.relative_to(root).parts
-        if not f.is_file() or {".git", "__pycache__", ".idea", "node_modules"} & set(rel) or f.name == ".DS_Store" \
+    for name in sorted(set(listed.split("\0")) - {""}):
+        f = root / name
+        parts = set(Path(name).parts)
+        if not f.is_file() or {".git", "__pycache__", ".idea", "node_modules"} & parts or f.name == ".DS_Store" \
                 or ".bak" in f.name:
             continue
+        shown = redact(name, private)
+        for n, rx in private:
+            if rx.search(name):
+                problems.append(f"{shown}: private name in path (pattern {n} of {LEAKCHECK})")
         try:
             text = f.read_text()
         except UnicodeDecodeError:
@@ -168,12 +238,18 @@ def scan(root: Path) -> list[str]:
                 if label == "email address" and EMAIL_ALLOW.search(m.group(0)):
                     continue
                 line = text.count("\n", 0, m.start()) + 1
-                problems.append(f"{f.relative_to(REPO)}:{line}: {label}: {m.group(0)[:40]}")
+                problems.append(f"{shown}:{line}: {label}: {redact(redact(m.group(0), private)[:40], private)}")
+        for n, rx in private:
+            # The name starts after the match's leading boundary character, which may be the newline before it.
+            lines = {text.count("\n", 0, m.start() + len(BOUNDARY.fullmatch(m.group(0)).group(1))) + 1
+                     for m in rx.finditer(text)}
+            problems += [f"{shown}:{line}: private name (pattern {n} of {LEAKCHECK})" for line in sorted(lines)]
     return problems
 
 
 def main() -> int:
     version = (REPO / "VERSION").read_text().strip()
+    private = load_private(REPO)
     if TEAM.exists():
         shutil.rmtree(TEAM)
     hashes: dict[str, dict[str, str]] = {}
@@ -192,16 +268,16 @@ def main() -> int:
             shutil.copytree(src, dest, ignore=SKIP)
             for f in dest.rglob("*"):
                 if f.is_file() and f.suffix in {".md", ".py", ".sh", ".yaml", ".yml", ".json", ".txt"}:
-                    f.write_text(portable(f.read_text()))
+                    f.write_text(redact(portable(f.read_text()), private))
             hashes.setdefault(name, {})[p] = tree_hash(dest)
         print(f"{p:11s} {version}  skills: {', '.join(skills) or '-'}")
     (TEAM / "kanban.yaml").write_text(kanban_settings())
     (TEAM / "skill-drift.md").write_text(drift_report(hashes))
     shutil.copytree(HERMES / "scripts", REPO / "scripts" / "hermes", dirs_exist_ok=True, ignore=SKIP)
     print("kanban settings, skill drift report and helper scripts captured")
-    problems = scan(REPO)
+    problems = scan(REPO, private)
     if problems:
-        print("\nREFUSING: possible secrets or personal data in the repo:", *problems, sep="\n  ")
+        print("\nREFUSING: possible secrets, personal data or private names in the repo:", *problems, sep="\n  ")
         return 1
     print("scan: clean")
     return 0
